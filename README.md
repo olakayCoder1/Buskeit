@@ -8,9 +8,11 @@ Schools can also leverage this app for proper student administration/planning an
 | METHOD | ROUTE | FUNCTIONALITY |ACCESS|
 | ------- | ----- | ------------- | ------------- |
 | *POST* | ```/api/v1/register/parents``` | _Register new user as parent_| _All users_|
+| *POST* | ```/api/v1/register/schooladmin``` | _Register new user as school admin_| _All users_|
 | *POST* | ```/api/v1/password/forget``` | _Request password reset_|_All users_|
 | *POST* | ```/api/v1/password/<token>/<uuidb64>/reset``` | _Reset password confirm_|_All users_|
 | *POST* | ```/api/v1/password/reset``` | _Change user password_|_Authenticated user_|
+| *GET* | ```/api/v1/schools/<str:identifier>/join``` | _User join a school_|_Authenticated user_|
 
 
 

@@ -4,7 +4,12 @@ from . import views
  
 
 urlpatterns = [ 
-    path('register/parent', views.ParentRegisterSerializerApiView.as_view(), name='parent-register'),
+    path('register/parent', views.ParentRegisterApiView.as_view(), name='parent-register'),
+    path('register/schooladmin', views.SchoolAdminRegisterApiView.as_view(), name='school-admin-register'),
+
+
+    path('schools/<str:identifier>/join', views.ParentSchoolJoinApiView.as_view()),
+    
 
     path('password/forget', views.ResetPasswordRequestEmailApiView.as_view(), name='password_reset_request_email'),
     path('password/<str:token>/<str:uuidb64>/reset', views.SetNewPasswordTokenCheckApi.as_view(), name='password_reset_done'),

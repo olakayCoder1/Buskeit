@@ -43,7 +43,6 @@ def forget_password_mail(*args ,**kwargs):
 
 
 def account_activation_mail(*args ,**kwargs): 
-    print(kwargs)
     receiver_email = kwargs['email']
     token = kwargs['token']
     uuidb64 = kwargs['uuidb64']

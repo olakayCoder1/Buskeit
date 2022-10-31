@@ -10,13 +10,13 @@ from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
 from api import serializers
 from rest_framework.permissions import IsAuthenticated 
 from .serializers import (
-    ManagementRegisterSerializer,ParentUserSerializer, ChangePasswordSerializer,
+    SchoolClientRegisterSerializer,ParentUserSerializer, ChangePasswordSerializer,
     UserSerializer , ParentRetrieveUpdateSerializer , ParentSerializer,
     ResetPasswordRequestEmailSerializer , SetNewPasswordSerializer,
-    ClientRegisterSerializer ,
+    ClientRegisterSerializer ,ParentSchoolJoinSerializer
 )
 from .models import (
-    User , Student ,Parent , AccountActivation
+    User , Student ,Parent , AccountActivation , SchoolAdmin
 )
 from schools.models import School
 # Create your views here.
@@ -102,8 +102,7 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 
 
-
-class ParentRegisterSerializerApiView(generics.GenericAPIView):
+class ParentRegisterApiView(generics.GenericAPIView):
     serializer_class = ClientRegisterSerializer
 
     def post(self, request:Response ):
@@ -133,6 +132,64 @@ class ParentRegisterSerializerApiView(generics.GenericAPIView):
                 AccountActivation.objects.create(active_token=token , email=user.email)
             return Response({'success':True , 'message': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
 
+class ParentSchoolJoinApiView(generics.GenericAPIView):
+    serializer_class = ParentSchoolJoinSerializer
+    permission_classes = [IsAuthenticated]
+    def get(self, request, identifier):
+        try:
+            user = Parent.objects.get(user__id=request.user.id)
+        except:
+            return Response({'success':False ,'message': "Access denied"} , status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            for model in School.objects.all():
+                print(model.identifier)
+            school = School.objects.get(identifier=identifier)
+            
+        except:
+            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        school.parent_schools.add(user)
+        return Response({'success':True },status.HTTP_200_OK)
+
+class SchoolAdminRegisterApiView(generics.GenericAPIView):
+    serializer_class = SchoolClientRegisterSerializer
+
+    def post(self, request:Response ):
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid(raise_exception=True) :
+            school_identifier = serializer.validated_data['school_identifier']
+            first_name = serializer.validated_data['first_name']
+            last_name = serializer.validated_data['last_name']
+            email = serializer.validated_data['email']
+            password1 = serializer.validated_data['password1']
+            password2 = serializer.validated_data['password2']
+            first_name = serializer.validated_data['first_name']
+            try:
+                school = School.objects.get(identifier=school_identifier)
+            except:
+                return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+            if password1 != password2 :
+                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
+            try:
+                user = User.objects.get(email=email)
+                return Response({'success':False ,'message': 'Email already exists'} , status=status.HTTP_400_BAD_REQUEST)
+            except:
+                user = User.objects.create(first_name=first_name,last_name=last_name,email=email, is_school_admin=True)
+                user.set_password(password2)
+                user.is_active = False
+                token = PasswordResetTokenGenerator().make_token(user)
+                uuidb64 = urlsafe_base64_encode(force_bytes(user.id))
+                Thread(target=account_activation_mail, kwargs={ 
+                        'email': user.email ,'token': token , 'uuidb64':uuidb64
+                    }).start()
+                # add the user mail and activation token to the database 
+                AccountActivation.objects.create(active_token=token , email=user.email)
+                # create an object of school admin for the current user 
+                admin = SchoolAdmin.objects.create(user=user , is_owner=True)
+                school.admin_schools.add(admin)
+            return Response({'success':True , 'message': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
+
+        
 
 class AccountEmailVerificationConfirmApiView(APIView):
     def get(request, uuidb64 , token ):

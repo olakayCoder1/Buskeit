@@ -67,6 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class SchoolAdmin(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=20 , null=True , blank=True)
     nin_number = models.PositiveIntegerField(null=True , blank=True)
     is_owner = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)  

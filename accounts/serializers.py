@@ -170,10 +170,22 @@ SIGN UP SERIALIZER FOR PARENTS / GUARDIANS
 class ClientRegisterSerializer(serializers.Serializer):
     first_name = serializers.CharField(allow_blank=False)
     last_name = serializers.CharField(allow_blank=False)
-    email = serializers.CharField(allow_blank=False)
+    email = serializers.EmailField(allow_blank=False)
     phone_number = serializers.CharField(style={'input-type':'number'}, allow_blank=False)
     password1 = serializers.CharField(style={'input-type': 'password'} , allow_blank=False)
     password2 = serializers.CharField(style={'input-type': 'password'}  , allow_blank=False)
 
 
+class SchoolClientRegisterSerializer(serializers.Serializer):
+    school_identifier = serializers.CharField(allow_blank=False)
+    first_name = serializers.CharField(allow_blank=False)
+    last_name = serializers.CharField(allow_blank=False)
+    email = serializers.EmailField(allow_blank=False)
+    phone_number = serializers.CharField(style={'input-type':'number'}, allow_blank=False)
+    password1 = serializers.CharField(style={'input-type': 'password'} , allow_blank=False)
+    password2 = serializers.CharField(style={'input-type': 'password'}  , allow_blank=False)
+
+
+class ParentSchoolJoinSerializer(serializers.Serializer):
+    school_identifier = serializers.CharField(allow_blank=False) 
     
