@@ -97,6 +97,7 @@ class Parent(models.Model):
 class Student(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100 , null=True)
     identifier = models.CharField(max_length=100, null=True , blank=True  , unique=True )
     parent = models.ForeignKey( Parent , on_delete=models.SET_NULL , null=True , blank=True)
     school = models.ForeignKey(School, on_delete=models.CASCADE)

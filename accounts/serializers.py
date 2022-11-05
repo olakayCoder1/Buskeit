@@ -6,6 +6,7 @@ from rest_framework import status
 
 
 
+
 class SchoolInlineSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField('get_created_at') 
     class Meta:
@@ -86,10 +87,13 @@ class ParentRetrieveUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserInlineSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField('get_created_at')
     class Meta:
         model = User 
         fields = ['identifier','first_name', 'last_name' , 'email' ,'is_parent','is_school_admin','is_active', 'is_staff','is_superuser', 'created_at']
 
+    def get_created_at(self,obj): 
+        return obj.created_at.strftime("%m-%d-%Y")
 
 class SchoolAdminSerializer(serializers.ModelSerializer):
     user = UserInlineSerializer(read_only=True)
@@ -118,14 +122,25 @@ class ParentSerializer(serializers.ModelSerializer):
     user = UserInlineSerializer(read_only=True)
     class Meta :
         model = Parent
-        fields = ['user','address','phone_number','nin_number','is_verified','schools']
+        fields = ['user','address','phone_number','nin_number','is_verified','school']
 
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    parent = ParentInlineSerializer(read_only=True)
+    created_at = serializers.SerializerMethodField('get_created_at')
     class Meta :
         model = Student
         fields = ['identifier', 'first_name','last_name', 'parent' , 'created_at']
+
+        extra_kwargs = {
+            'identifier':{'read_only' : True},
+            'created_at':{'read_only' : True},
+        }
+
+    def get_created_at(self,obj): 
+        return obj.created_at.strftime("%m-%d-%Y")
+
 
 
 
@@ -147,7 +162,6 @@ class SetNewPasswordSerializer(serializers.Serializer):
         fields = ['password', 'password2']
 
 class ChangePasswordSerializer(serializers.Serializer):
-    model = User
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
@@ -189,3 +203,8 @@ class SchoolClientRegisterSerializer(serializers.Serializer):
 class ParentSchoolJoinSerializer(serializers.Serializer):
     school_identifier = serializers.CharField(allow_blank=False) 
     
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)

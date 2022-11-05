@@ -1,19 +1,19 @@
-from django.http import HttpResponse
 from django.shortcuts import render
+from django.contrib.auth import authenticate
 from rest_framework import generics , status 
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
+from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str , force_bytes, DjangoUnicodeDecodeError, force_str
 from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
-from api import serializers
 from rest_framework.permissions import IsAuthenticated 
 from .serializers import (
     SchoolClientRegisterSerializer,ParentUserSerializer, ChangePasswordSerializer,
     UserSerializer , ParentRetrieveUpdateSerializer , ParentSerializer,
     ResetPasswordRequestEmailSerializer , SetNewPasswordSerializer,
-    ClientRegisterSerializer ,ParentSchoolJoinSerializer
+    ClientRegisterSerializer ,ParentSchoolJoinSerializer , LoginSerializer
 )
 from .models import (
     User , Student ,Parent , AccountActivation , SchoolAdmin
@@ -21,7 +21,6 @@ from .models import (
 from schools.models import School
 # Create your views here.
 from .utils import forget_password_mail , account_activation_mail
-import asyncio
 from threading import Thread
 
 class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
@@ -189,7 +188,36 @@ class SchoolAdminRegisterApiView(generics.GenericAPIView):
                 school.admin_schools.add(admin)
             return Response({'success':True , 'message': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
 
-        
+
+class LoginApiView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request ):
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid(raise_exception=True):
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+            user = authenticate(email=email , password=password)
+            if user is not None :
+                response = {
+                    'success': True ,
+                    'message': 'Login is successful',
+                    "token" : user.auth_token.key
+                }
+                return Response(response , status=status.HTTP_200_OK)
+            
+            return Response({'success': False , 'message': 'Invalid login credential'}, status=status.HTTP_200_OK)
+
+class LogoutApiView(generics.GenericAPIView):
+
+    @permission_classes([IsAuthenticated])
+    def get(self,request):
+        try:
+            request.user.auth_token.delete()
+        except :
+            pass
+        return Response({"success": _("Successfully logged out.")}, status=status.HTTP_200_OK)
 
 class AccountEmailVerificationConfirmApiView(APIView):
     def get(request, uuidb64 , token ):
@@ -218,30 +246,6 @@ class AccountEmailVerificationConfirmApiView(APIView):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def home(request):
-  
-    return HttpResponse('HELLO WORLD')
 
 
 

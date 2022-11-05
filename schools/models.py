@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import * 
+# from accounts.models import Student
 # from django.contrib.auth import get_user_model
 # Create your models here.
 # User = get_user_model() 
@@ -23,6 +23,9 @@ class School(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    
+    
 
 
 

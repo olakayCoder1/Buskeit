@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     "corsheaders",
+    'drf_yasg',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -138,3 +139,15 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+REST_FRAMEWORK = {
+    "NON_FIELD_ERRORS_KEY" : 'errors',
+    "DEFAULT_AUTHENTICATION_CLASSES" : (
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    )
+}
