@@ -25,16 +25,17 @@ class SchoolInlineSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    school = SchoolInlineSerializer(read_only=True , many=True)
+    # school = SchoolInlineSerializer(read_only=True , many=True) 
     class Meta:
         model = User
-        fields = ['identifier', 'email' , 'first_name' , 'last_name', 'is_parent', 'is_school_admin','is_staff']
+        fields = ['identifier', 'email' , 'first_name' , 'last_name','is_staff']
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
             'is_active':{'read_only' : True},
         }
         
+
 
 class ManagementRegisterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -88,12 +89,16 @@ class ParentRetrieveUpdateSerializer(serializers.ModelSerializer):
 
 class UserInlineSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField('get_created_at')
+    updated_at = serializers.SerializerMethodField('get_updated_at')
     class Meta:
         model = User 
-        fields = ['identifier','first_name', 'last_name' , 'email' ,'is_parent','is_school_admin','is_active', 'is_staff','is_superuser', 'created_at']
+        fields = ['identifier','first_name', 'last_name' , 'email' ,'is_active', 'is_staff','is_superuser', 'created_at', 'updated_at']
 
     def get_created_at(self,obj): 
         return obj.created_at.strftime("%m-%d-%Y")
+
+    def get_updated_at(self,obj): 
+        return obj.updated_at.strftime("%m-%d-%Y")
 
 class SchoolAdminSerializer(serializers.ModelSerializer):
     user = UserInlineSerializer(read_only=True)
@@ -127,19 +132,24 @@ class ParentSerializer(serializers.ModelSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
-    parent = ParentInlineSerializer(read_only=True)
+    # parent = ParentInlineSerializer(read_only=True)
     created_at = serializers.SerializerMethodField('get_created_at')
+    # updated_at = serializers.SerializerMethodField('get_updated_at')
     class Meta :
         model = Student
-        fields = ['identifier', 'first_name','last_name', 'parent' , 'created_at']
+        fields = ['identifier', 'first_name','last_name','middle_name',  'parent' , 'created_at']
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
             'created_at':{'read_only' : True},
+            'parent':{'read_only' : True},
         }
 
     def get_created_at(self,obj): 
         return obj.created_at.strftime("%m-%d-%Y")
+    
+
+
 
 
 
@@ -155,15 +165,15 @@ class ResetPasswordRequestEmailSerializer(serializers.Serializer):
 
 
 class SetNewPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(min_length=1,max_length=30, write_only=True)
-    password2 = serializers.CharField(min_length=1,max_length=30, write_only=True)
+    password = serializers.CharField(min_length=1,max_length=30, write_only=True , style={'input-type': 'password'} )
+    password2 = serializers.CharField(min_length=1,max_length=30, write_only=True , style={'input-type': 'password'} )
     
     class Meta:
         fields = ['password', 'password2']
 
 class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True)
+    old_password = serializers.CharField(required=True , style={'input-type': 'password'} )
+    new_password = serializers.CharField(required=True , style={'input-type': 'password'} )
 
 
     def save(self):

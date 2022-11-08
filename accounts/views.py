@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.contrib.auth import authenticate
 from rest_framework import generics , status 
 from rest_framework.generics import GenericAPIView
@@ -11,17 +10,17 @@ from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
 from rest_framework.permissions import IsAuthenticated 
 from .serializers import (
     SchoolClientRegisterSerializer,ParentUserSerializer, ChangePasswordSerializer,
-    UserSerializer , ParentRetrieveUpdateSerializer , ParentSerializer,
+    UserSerializer , ParentRetrieveUpdateSerializer , ParentSerializer ,
     ResetPasswordRequestEmailSerializer , SetNewPasswordSerializer,
-    ClientRegisterSerializer ,ParentSchoolJoinSerializer , LoginSerializer
+    ClientRegisterSerializer ,ParentSchoolJoinSerializer , LoginSerializer 
 )
 from .models import (
-    User , Student ,Parent , AccountActivation , SchoolAdmin
+    User , Student , Parent , AccountActivation , SchoolAdmin
 )
 from schools.models import School
-# Create your views here.
 from .utils import forget_password_mail , account_activation_mail
 from threading import Thread
+
 
 class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
     serializer_class = ResetPasswordRequestEmailSerializer
@@ -98,6 +97,41 @@ class ChangePasswordView(generics.UpdateAPIView):
             return Response(response)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+#  authentication views starts
+class UserRegisterApiView(generics.GenericAPIView):
+    """
+    This view is used in the registration of a new user
+    """
+    serializer_class = ClientRegisterSerializer
+
+    def post(self, request:Response ):
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid(raise_exception=True) :
+            first_name = serializer.validated_data['first_name']
+            last_name = serializer.validated_data['last_name']
+            email = serializer.validated_data['email']
+            password1 = serializer.validated_data['password1']
+            password2 = serializer.validated_data['password2']
+            if password1 != password2 :
+                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
+            try:
+                user = User.objects.get(email=email)
+                return Response({'success':False ,'message': 'Email already exists'} , status=status.HTTP_400_BAD_REQUEST)
+            except:
+                user = User.objects.create(first_name=first_name,last_name=last_name,email=email)
+                user.set_password(password2)
+                user.save()
+                # user.is_active = False
+                # token = PasswordResetTokenGenerator().make_token(user)
+                # uuidb64 = urlsafe_base64_encode(force_bytes(user.id))
+                # Thread(target=account_activation_mail, kwargs={
+                #         'email': user.email ,'token': token , 'uuidb64':uuidb64
+                #     }).start()
+                # AccountActivation.objects.create(active_token=token , email=user.email)
+            return Response({'success':True , 'message': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
 
 
 
@@ -200,10 +234,12 @@ class LoginApiView(generics.GenericAPIView):
             password = serializer.validated_data['password']
             user = authenticate(email=email , password=password)
             if user is not None :
+                serializer = UserSerializer(user)
                 response = {
                     'success': True ,
                     'message': 'Login is successful',
-                    "token" : user.auth_token.key
+                    "token" : user.auth_token.key , 
+                    'user' : serializer.data 
                 }
                 return Response(response , status=status.HTTP_200_OK)
             
@@ -217,7 +253,7 @@ class LogoutApiView(generics.GenericAPIView):
             request.user.auth_token.delete()
         except :
             pass
-        return Response({"success": _("Successfully logged out.")}, status=status.HTTP_200_OK)
+        return Response({"success":True , 'message':"Successfully logged out."}, status=status.HTTP_200_OK)
 
 class AccountEmailVerificationConfirmApiView(APIView):
     def get(request, uuidb64 , token ):

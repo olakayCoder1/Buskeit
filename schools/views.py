@@ -1,11 +1,15 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from accounts.models import User , School  , Parent , Student
-from accounts.serializers import ParentSerializer , ParentRetrieveUpdateSerializer , ParentInlineSerializer , StudentSerializer
-from .models import School
-from .serializers import SchoolSerializer
+from accounts.models import User , School  , Parent , Student , ChannelUser
+from accounts.serializers import (
+    ParentSerializer , ParentRetrieveUpdateSerializer , 
+    ParentInlineSerializer , StudentSerializer 
+
+)
+from .models import School , Channel 
+from .serializers import SchoolSerializer , ChannelsSerializer , ChannelJoinSerializer , ChannelUserSerializer , ChannelUserFullDetailSerializer
 from django.contrib.auth import get_user_model
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny , IsAuthenticated
 from rest_framework import generics , status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -18,13 +22,135 @@ from rest_framework import generics
 # Create your views here.
 CustomUser = get_user_model()
 
-
+"""
+!!! TODO => renaming all the school variable to channel
+"""
 
 def index(request):
-    users = User.objects.all()
-    students = User.objects.all()
-    school = School.objects.get(id=1)
+    # users = User.objects.all() 
+    # students = User.objects.all()
+    # school = School.objects.get(id=1)
     return HttpResponse('Hello')
+
+class ChannelsListCreateApiView(generics.ListCreateAPIView):
+    queryset = Channel.objects.all()
+    serializer_class = ChannelsSerializer
+ 
+    def post(self, request, *args, **kwargs):
+        # admin = User.objects.get(id=request.id) 
+        return super().post(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+class ChannelsRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView): 
+    queryset = Channel.objects.all()
+    serializer_class =ChannelsSerializer
+    lookup_field = 'identifier'
+
+class ChannelUserJoinApiView(generics.GenericAPIView):
+    serializer_class = ChannelJoinSerializer
+
+    def get(self, request, invitation_code):            
+        try: 
+            user = User.objects.get(id=request.id) 
+        except:
+            return Response({'success':False ,'message': "Access denied"} , status=status.HTTP_401_UNAUTHORIZED)
+        data = request.data
+        serializer = self.serializer_class(data=data) 
+        if serializer.is_valid(raise_exception=True):
+            try: 
+                channel = Channel.objects.get(invitation_code=invitation_code)
+                # channel = Channel.objects.get(invitation_code=serializer.validated_data['invitation_code'])
+            except:
+                return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+            
+            if ChannelUser.objects.filter(user=user, channel=channel).exists():
+                return Response({'success':False ,'message': 'You are already in the channel'} , status=status.HTTP_200_OK)
+            ChannelUser.objects.create(user=user, channel=channel)
+        return Response({'success':True }, status=status.HTTP_200_OK)  
+
+
+class ChannelStudentListCreateApiView(generics.GenericAPIView): 
+    serializer_class = StudentSerializer
+ 
+    def get_queryset(self):
+        student = Student.objects.filter(channel__identifier=self.kwargs.get('school_identifier'))
+        if student.exists():
+            return student
+        return None
+        
+    #  get the student of provided channel identifier
+    def get(self, request , school_identifier ):
+        query = self.get_queryset()
+        if query == None :
+            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(query , many=True)
+        return  Response(serializer.data , status=status.HTTP_200_OK) 
+
+
+    def post(self, request , school_identifier ):
+        try:
+            channel = Channel.objects.get(identifier=self.kwargs.get('school_identifier'))
+        except:
+            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            first_name = serializer.validated_data.get('first_name', None )
+            last_name = serializer.validated_data.get('last_name', None )
+            middle_name = serializer.validated_data.get('middle_name', None )
+            student = Student.objects.create(first_name=first_name , last_name=last_name , middle_name=middle_name , channel=channel )
+            return Response(self.serializer_class(student).data , status=status.HTTP_201_CREATED)
+
+class ChannelUsersListAPIView(generics.ListAPIView):
+    queryset = ChannelUser.objects.all()
+    serializer_class = ChannelUserSerializer
+
+    def get(self, request , school_identifier ):
+        try:
+            channel = Channel.objects.get(identifier=school_identifier)
+        except:
+            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        users = ChannelUser.objects.filter(channel=channel)
+        serializer = self.serializer_class(users , many=True)
+        return  Response(serializer.data , status=status.HTTP_200_OK) 
+
+
+class ChannelUsersRetrieveUpdateDestroyAPIView(generics.GenericAPIView):
+    serializer_class = ChannelUserFullDetailSerializer
+
+    def get(self, request , school_identifier , channel_user_identifier ):
+        try:
+            channel = Channel.objects.get(identifier=school_identifier)
+        except:
+            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        user_query = ChannelUser.objects.filter(channel=channel, identifier=channel_user_identifier)
+        if user_query.exists():
+            user = user_query.first()
+            serializer = self.serializer_class(user)
+            return Response(serializer.data ,  status=status.HTTP_200_OK)
+        # serializer = self.serializer_class(users , many=True)
+        return  Response({'success':False ,'message': 'User not in  does not exist in channels'} , status=status.HTTP_400_BAD_REQUEST) 
+
+
+class ChannelParentKidsListAPIView(generics.ListAPIView):
+    # this view return the list parent kids
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+
+    def get(self, request , school_identifier ):
+        # user = User.objects.get(id=request.user.id)
+        for m in Student.objects.all():
+            # print(m.channel.id)
+            print(m.parent.user.id)
+        user = User.objects.get(id=5)
+        try:
+            channel = Channel.objects.get(identifier=school_identifier)
+        except:
+            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        students = self.queryset.filter(channel=channel , parent__user__id=user.id)
+        serializer = self.serializer_class( students , many=True)
+        return  Response(serializer.data , status=status.HTTP_200_OK) 
 
 
 

@@ -26,6 +26,9 @@ def forget_password_mail(*args ,**kwargs):
     message["From"] = sender_email
     message["To"] = receiver_email
     reset_link = f'http://127.0.0.1:8000/password/{token}/{uuidb64}/reset'
+    print('***'*100)
+    print(reset_link)
+    print('***'*100)
     html = render_to_string('accounts/password-reset-mail.html', {'reset_link': reset_link})
     part = MIMEText(html, "html")
     # Add HTML/plain-text parts to MIMEMultipart message

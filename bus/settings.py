@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -149,5 +150,17 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5
+}
+
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Buskeit Admin",
+    "site_header": "Buskeit",
+    "welcome_sign": "Welcome to the Buskeit Admin",
+    "site_brand": "Buskeit",
+    # Copyright on the footer
+    "copyright": "Olakay Library Ltd",
 }

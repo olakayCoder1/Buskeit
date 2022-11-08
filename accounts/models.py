@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser , PermissionsMixin ,BaseUserManager
-from schools.models import School
+from schools.models import School 
 # Create your models here.
 
 
@@ -40,17 +40,22 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    identifier = models.CharField(max_length=100, null=True , blank=True , unique=True )
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True )
-    identifier = models.CharField(max_length=100, null=True , blank=True , unique=True )
     # image = models.ImageField(default='profiles/image-default.png', upload_to=upload_to)
-    is_parent = models.BooleanField(default=False)
-    is_school_admin = models.BooleanField(default=False)
+    address = models.TextField(null=True , blank=True)
+    phone_number = models.CharField(max_length=20 , null=True , blank=True)
+    nin_number = models.PositiveIntegerField(null=True , blank=True)
+    is_verified = models.BooleanField(default=False)
+    # is_parent = models.BooleanField(default=False)
+    # is_school_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
 
     objects= UserManager()
@@ -63,7 +68,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.first_name
-
+    
 
 class SchoolAdmin(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -97,13 +102,15 @@ class Parent(models.Model):
 class Student(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    middle_name = models.CharField(max_length=100 , null=True)
+    middle_name = models.CharField(max_length=100 , null=True , blank=True)
     identifier = models.CharField(max_length=100, null=True , blank=True  , unique=True )
-    parent = models.ForeignKey( Parent , on_delete=models.SET_NULL , null=True , blank=True)
-    school = models.ForeignKey(School, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey( 'accounts.ChannelUser', on_delete=models.SET_NULL , null=True , blank=True) 
+    school = models.ForeignKey(School, on_delete=models.CASCADE , null=True , blank=True)
+    channel = models.ForeignKey('schools.Channel', on_delete=models.CASCADE, null=True , blank=True)
+    created_at = models.DateTimeField(auto_now_add=True) 
 
 
+ 
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
@@ -112,3 +119,19 @@ class Student(models.Model):
 class AccountActivation(models.Model):
     email = models.EmailField()
     active_token = models.CharField(max_length=1000)
+
+
+
+class ChannelUser(models.Model):
+    identifier = models.CharField(max_length=17 , null=True , blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    channel = models.ForeignKey('schools.Channel', on_delete=models.CASCADE)
+    # the admin  is the user that created the channel 
+    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self) -> str:
+        return self.user.email
