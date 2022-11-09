@@ -1,9 +1,9 @@
-from .models import School , Channel 
+from .models import School , Channel  , StudentPickUpVerification
 from accounts.serializers import (
     StudentSerializer , UserInlineSerializer , UserSerializer ,
     ParentInlineSerializer , StudentSerializer
 )
-from accounts.models import Parent, Student , User  , ChannelUser      
+from accounts.models import Parent, Student , User  , ChannelUser       
 from rest_framework import serializers
 
 
@@ -109,4 +109,11 @@ class SchoolSerializer(serializers.ModelSerializer):
 
     def get_created_at(self,obj): 
         return obj.created_at.strftime("%m-%d-%Y")
-        
+    
+
+
+class StudentStudentPickUpVerificationHistorySerializer(serializers.ModelSerializer):
+    student = StudentSerializer(read_only=True)
+    class Meta:
+        model = StudentPickUpVerification
+        fields = [ 'student' , 'date' , 'created_at' , 'updated_at']

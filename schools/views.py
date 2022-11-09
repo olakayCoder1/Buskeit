@@ -6,15 +6,19 @@ from accounts.serializers import (
     ParentInlineSerializer , StudentSerializer 
 
 )
-from .models import School , Channel 
-from .serializers import SchoolSerializer , ChannelsSerializer , ChannelJoinSerializer , ChannelUserSerializer , ChannelUserFullDetailSerializer
+from .models import School , Channel  , StudentPickUpVerification
+from .permissions import IsStudentParent , IsStudentParentOrChannelStaff
+from .serializers import  (
+    SchoolSerializer , ChannelsSerializer , ChannelJoinSerializer ,
+     ChannelUserSerializer , ChannelUserFullDetailSerializer , StudentStudentPickUpVerificationHistorySerializer
+)
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny , IsAuthenticated
 from rest_framework import generics , status
-from rest_framework.generics import GenericAPIView
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
-
+import datetime
 
 
 from rest_framework import generics
@@ -33,6 +37,7 @@ def index(request):
     return HttpResponse('Hello')
 
 class ChannelsListCreateApiView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Channel.objects.all()
     serializer_class = ChannelsSerializer
  
@@ -137,13 +142,14 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
     # this view return the list parent kids
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    permission_classes = [IsAuthenticated]
 
     def get(self, request , school_identifier ):
-        # user = User.objects.get(id=request.user.id)
+        user = User.objects.get(id=request.user.id)
         for m in Student.objects.all():
             # print(m.channel.id)
             print(m.parent.user.id)
-        user = User.objects.get(id=5)
+        # user = User.objects.get(id=5)
         try:
             channel = Channel.objects.get(identifier=school_identifier)
         except:
@@ -151,6 +157,46 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
         students = self.queryset.filter(channel=channel , parent__user__id=user.id)
         serializer = self.serializer_class( students , many=True)
         return  Response(serializer.data , status=status.HTTP_200_OK) 
+
+
+class StudentRetrieveUpdateDestroyAPIView(generics.RetrieveAPIView) :
+    # This view allow only the students parent or channel staff to view detail
+    permission_classes = [IsAuthenticated , IsStudentParentOrChannelStaff ]
+    serializer_class = StudentSerializer
+    queryset = Student.objects.all()
+    lookup_field = 'identifier'
+
+
+class StudentPickUpVerificationApiView(generics.RetrieveAPIView) :
+    permission_classes = [IsAuthenticated , IsStudentParent]
+    serializer_class = StudentSerializer
+    queryset = Student.objects.all()
+    lookup_field = 'identifier'
+
+    def get(self, request, *args, **kwargs):
+        student = self.get_object()
+        if StudentPickUpVerification.objects.filter(date=datetime.datetime.now().date() , student=student ).exists(): 
+            return Response({'success': True ,'message': 'Student already verify'} ,status=status.HTTP_200_OK) 
+        StudentPickUpVerification.objects.create(student=student)
+        return Response({'success': True ,'message': 'Successful verification'} , status=status.HTTP_200_OK) 
+
+
+class StudentPickUpVerificationHistoryApiView(generics.GenericAPIView) :
+    permission_classes = [IsAuthenticated , IsStudentParentOrChannelStaff ]
+    serializer_class = StudentStudentPickUpVerificationHistorySerializer
+    queryset = StudentPickUpVerification.objects.all()
+    lookup_field = 'identifier'
+
+    def get(self, request, identifier):
+        query = StudentPickUpVerification.objects.filter(student__identifier=identifier)
+        serializer = self.serializer_class(query , many=True)
+        return Response( serializer.data , status=status.HTTP_200_OK) 
+
+    
+
+
+
+
 
 
 

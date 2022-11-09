@@ -1,6 +1,9 @@
 from django.urls import path
 from . import views
-
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+    TokenVerifyView,
+)
  
 
 urlpatterns = [ 
@@ -8,12 +11,14 @@ urlpatterns = [
     path('auth/register', views.UserRegisterApiView.as_view(), name='register'),
     # path('auth/register/parent', views.ParentRegisterApiView.as_view(), name='parent-register'),
     # path('auth/register/schooladmin', views.SchoolAdminRegisterApiView.as_view(), name='school-admin-register'),
-    path('auth/login', views.LoginApiView.as_view(), name='login'),
-    path('auth/logout', views.LogoutApiView.as_view(), name='logout'),
-    path('auth/password/forget', views.ResetPasswordRequestEmailApiView.as_view(), name='password_reset_request_email'),
+    path('auth/token',views.LoginApiView.as_view(), name='token_obtain_pair'),
+    path('auth/token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/token/verify', TokenVerifyView.as_view(), name='token_verify'),
+    path('auth/password/reset', views.ResetPasswordRequestEmailApiView.as_view(), name='password_reset_request_email'),
     path('auth/password/<str:token>/<str:uuidb64>/reset', views.SetNewPasswordTokenCheckApi.as_view(), name='password_reset_done'),
-    path('auth/password/reset', views.ChangePasswordView.as_view(), name='password_change'),
+    path('auth/password/change', views.ChangePasswordView.as_view(), name='password_change'),
  
+
     path('channels', views.ChannelsListCreateApiView.as_view()),
     path('channels/<str:identifier>', views.ChannelsRetrieveUpdateDestroyApiView.as_view()),
     path('channels/<str:invitation_code>/join', views.ChannelUserJoinApiView.as_view()), 
@@ -21,6 +26,16 @@ urlpatterns = [
     path('channels/<str:school_identifier>/users', views.ChannelUsersListAPIView.as_view()),
     path('channels/<str:school_identifier>/kids', views.ChannelParentKidsListAPIView.as_view()),
     path('channels/<str:school_identifier>/users/<str:channel_user_identifier>', views.ChannelUsersRetrieveUpdateDestroyAPIView.as_view()),
+
+
+    path('students/<str:identifier>', views.StudentRetrieveUpdateDestroyAPIView.as_view()),
+    path('students/<str:identifier>/verify', views.StudentPickUpVerificationApiView.as_view()),
+    path('students/<str:identifier>/history', views.StudentPickUpVerificationHistoryApiView.as_view()), 
+
+
+
+
+    
 
 
 

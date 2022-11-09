@@ -19,6 +19,7 @@ from .models import (
 )
 from schools.models import School
 from .utils import forget_password_mail , account_activation_mail
+from .tokens import create_jwt_pair_for_user
 from threading import Thread
 
 
@@ -59,11 +60,15 @@ class SetNewPasswordTokenCheckApi(generics.GenericAPIView):
         try:
             id = smart_str(urlsafe_base64_decode(uuidb64))
             user = User.objects.get(id=id)
+            password1 = request.data['password1']
+            password2 = request.data['password2']
+            if password1 != password2 :
+                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
             if PasswordResetTokenGenerator().check_token(user, token):
                 data = request.data
                 serializer = self.serializer_class(data=data)
                 serializer.is_valid(raise_exception=True)
-                user.set_password(serializer.validated_data['password'])
+                user.set_password(serializer.validated_data['password1'])
                 user.save() 
                 return Response({'success':True , 'message':'Password updated successfully'}, status=status.HTTP_200_OK)
             return Response({'success':False ,'message':'Token is not valid'}, status=status.HTTP_400_BAD_REQUEST)
@@ -85,6 +90,10 @@ class ChangePasswordView(generics.UpdateAPIView):
         self.object=self.get_object()
         serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
+            password1 = serializer.validated_data['password1']
+            password2 = serializer.validated_data['password2']
+            if password1 != password2 :
+                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
             if not self.object.check_password(serializer.data.get('old_password')):
                 return Response({'ola_password': ['wrong password']}, status=status.HTTP_400_BAD_REQUEST)
             self.object.set_password(serializer.data.get("new_password"))
@@ -235,25 +244,18 @@ class LoginApiView(generics.GenericAPIView):
             user = authenticate(email=email , password=password)
             if user is not None :
                 serializer = UserSerializer(user)
+                tokens = create_jwt_pair_for_user(user)
                 response = {
                     'success': True ,
                     'message': 'Login is successful',
-                    "token" : user.auth_token.key , 
+                    "tokens" : tokens , 
                     'user' : serializer.data 
                 }
                 return Response(response , status=status.HTTP_200_OK)
             
             return Response({'success': False , 'message': 'Invalid login credential'}, status=status.HTTP_200_OK)
 
-class LogoutApiView(generics.GenericAPIView):
 
-    @permission_classes([IsAuthenticated])
-    def get(self,request):
-        try:
-            request.user.auth_token.delete()
-        except :
-            pass
-        return Response({"success":True , 'message':"Successfully logged out."}, status=status.HTTP_200_OK)
 
 class AccountEmailVerificationConfirmApiView(APIView):
     def get(request, uuidb64 , token ):

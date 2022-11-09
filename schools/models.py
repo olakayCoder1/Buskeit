@@ -52,5 +52,17 @@ class Channel(models.Model):
 
 
 
+class StudentPickUpVerification(models.Model):
+    student = models.ForeignKey('accounts.Student' , on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self) -> str:
+        return self.student.first_name
+
+
 
 

@@ -165,7 +165,7 @@ class ResetPasswordRequestEmailSerializer(serializers.Serializer):
 
 
 class SetNewPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(min_length=1,max_length=30, write_only=True , style={'input-type': 'password'} )
+    password1 = serializers.CharField(min_length=1,max_length=30, write_only=True , style={'input-type': 'password'} )
     password2 = serializers.CharField(min_length=1,max_length=30, write_only=True , style={'input-type': 'password'} )
     
     class Meta:
