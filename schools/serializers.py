@@ -1,9 +1,9 @@
-from .models import School , Channel  , StudentPickUpVerification
+from .models import Channel  , StudentPickUpVerification
 from accounts.serializers import (
     StudentSerializer , UserInlineSerializer , UserSerializer ,
-    ParentInlineSerializer , StudentSerializer
+    StudentSerializer
 )
-from accounts.models import Parent, Student , User  , ChannelUser       
+from accounts.models import Student , User  , ChannelUser       
 from rest_framework import serializers
 
 
@@ -14,12 +14,13 @@ class ChannelsSerializer(serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField('get_updated_at') 
     class Meta:
         model = Channel
-        fields = ['identifier','name','email','rc_number','phone_number', 'address' , 'is_active','is_verified' ,'created_at' ,  'updated_at']  
+        fields = ['identifier','name','email','rc_number','phone_number', 'address' ,'invitation_code', 'is_active','is_verified' ,'created_at' ,  'updated_at']  
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
             'is_active':{'read_only' : True},
             'is_verified':{'read_only' : True}, 
+            'invitation_code':{'read_only' : True}, 
             'created_at':{'read_only' : True}, 
             'updated_at':{'read_only' : True}, 
         }
@@ -28,6 +29,10 @@ class ChannelsSerializer(serializers.ModelSerializer):
         return obj.created_at.strftime("%m-%d-%Y")
     def get_updated_at(self,obj): 
         return obj.updated_at.strftime("%m-%d-%Y")
+
+class ChannelActivationCodeConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField(allow_blank=False) 
+    code = serializers.CharField(allow_blank=False) 
 
 
 class ChannelUserSerializer(serializers.ModelSerializer):
@@ -44,6 +49,12 @@ class ChannelUserSerializer(serializers.ModelSerializer):
             'created_at':{'read_only' : True}, 
             'updated_at':{'read_only' : True}, 
         }
+
+    def get_created_at(self,obj): 
+        return obj.created_at.strftime("%m-%d-%Y")
+
+    def get_updated_at(self,obj): 
+        return obj.updated_at.strftime("%m-%d-%Y")
 
     
     
@@ -81,39 +92,12 @@ class ChannelUserFullDetailSerializer(serializers.ModelSerializer):
 class ChannelJoinSerializer(serializers.Serializer):
     invitation_code = serializers.CharField(allow_blank=False) 
 
-class SchoolSerializer(serializers.ModelSerializer):
-    # students = serializers.SerializerMethodField('school_students')
-    # parents = serializers.SerializerMethodField('school_parents') 
-    created_at = serializers.SerializerMethodField('get_created_at') 
-    class Meta:
-        model = School
-        fields = ['identifier','name', 'address' , 'is_active','is_verified' ,'created_at']  
-        # fields = ['identifier','name', 'address' , 'is_active','is_verified' ,'created_at','students', 'parents'] 
-
-
-        extra_kwargs = {
-            'identifier':{'read_only' : True},
-            'is_active':{'read_only' : True},
-            'is_verified':{'read_only' : True}, 
-        }
-
-    def school_students(self , obj):
-        users =Student.objects.filter(school__identifier=obj.identifier)
-        return StudentSerializer(users, many=True).data
- 
-    def school_parents(self , obj):
-        users =Parent.objects.filter(school__identifier=obj.identifier)
-        return ParentInlineSerializer(users, many=True).data
 
 
 
-    def get_created_at(self,obj): 
-        return obj.created_at.strftime("%m-%d-%Y")
-    
-
-
-class StudentStudentPickUpVerificationHistorySerializer(serializers.ModelSerializer):
-    student = StudentSerializer(read_only=True)
+class StudentPickUpVerificationHistorySerializer(serializers.ModelSerializer):
+    # student = StudentSerializer(read_only=True)
     class Meta:
         model = StudentPickUpVerification
-        fields = [ 'student' , 'date' , 'created_at' , 'updated_at']
+        fields = ['date' ,'completed', 'created_at' , 'updated_at'] 
+        # fields = [ 'student' , 'date' , 'created_at' , 'updated_at']

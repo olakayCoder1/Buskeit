@@ -9,18 +9,22 @@ from django.utils.encoding import smart_str , force_bytes, DjangoUnicodeDecodeEr
 from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
 from rest_framework.permissions import IsAuthenticated 
 from .serializers import (
-    SchoolClientRegisterSerializer,ParentUserSerializer, ChangePasswordSerializer,
-    UserSerializer , ParentRetrieveUpdateSerializer , ParentSerializer ,
+    ChangePasswordSerializer,  UserSerializer ,
     ResetPasswordRequestEmailSerializer , SetNewPasswordSerializer,
-    ClientRegisterSerializer ,ParentSchoolJoinSerializer , LoginSerializer 
+    ClientRegisterSerializer, LoginSerializer ,
+    UserEmailPremblyConfirmSerializer , UserAccountActivationCodeConfirmSerializer
 )
 from .models import (
-    User , Student , Parent , AccountActivation , SchoolAdmin
+    User , Student , AccountActivation ,
+    AccountActivationCode
 )
-from schools.models import School
-from .utils import forget_password_mail , account_activation_mail
+from .mail_services import MailServices
 from .tokens import create_jwt_pair_for_user
+from .utils import PremblyServices
 from threading import Thread
+import string
+import random
+
 
 
 class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
@@ -34,7 +38,7 @@ class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
                 user = User.objects.get(email=email)
                 uuidb64 = urlsafe_base64_encode(force_bytes(user.id))
                 token = PasswordResetTokenGenerator().make_token(user)
-                Thread(target=forget_password_mail, kwargs={
+                Thread(target=MailServices.forget_password_mail, kwargs={
                     'email': user.email ,'token': token , 'uuidb64':uuidb64
                 }).start()
                 # send_mail  = await forget_password_mail(user.email,token ,uuidb64)
@@ -51,7 +55,6 @@ class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
                     {'success':False , 'message': 'Enter a valid email address' }, 
                     status=status.HTTP_400_BAD_REQUEST
                     )
-
 
 # This view handle changing of user password on forget password
 class SetNewPasswordTokenCheckApi(generics.GenericAPIView):
@@ -93,27 +96,84 @@ class ChangePasswordView(generics.UpdateAPIView):
             password1 = serializer.validated_data['password1']
             password2 = serializer.validated_data['password2']
             if password1 != password2 :
-                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
+                return  Response({'success':False ,'detail': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
             if not self.object.check_password(serializer.data.get('old_password')):
-                return Response({'ola_password': ['wrong password']}, status=status.HTTP_400_BAD_REQUEST)
-            self.object.set_password(serializer.data.get("new_password"))
+                return Response({'success':False ,'detail': 'wrong password'}, status=status.HTTP_400_BAD_REQUEST)
+            self.object.set_password(serializer.data.get("password2"))
             self.object.save()
             response={
-                'status': 'success',
-                'code': status.HTTP_200_OK,
-                'message': 'Password updated successfully','data':[]
+                'success': True,
+                'detail': 'Password updated successfully',
                 }
-            return Response(response)
+            return Response(response, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
+    serializer_class = UserEmailPremblyConfirmSerializer
+    def post(self, request) :
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        password1 = serializer.validated_data['password1']
+        password2 = serializer.validated_data['password2']
+        if password1 != password2 :
+                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=email).exists():
+            return Response({'success': False , 'detail':'Email already exist'}, status=status.HTTP_400_BAD_REQUEST)
+        # At this point we can now call the prembly APi to verify the email
+        verify = PremblyServices.user_signup_verification_mail(email=email)
+        if verify :
+            code = ''.join(random.choice(string.digits) for _ in range(4))
+            AccountActivationCode.objects.create(email=email, code=int(code))
+            Thread(target=MailServices.user_register_verification_email, kwargs={
+                        'email': email , 'code' : code
+                    }).start()
+            user = User.objects.create(email=email)
+            user.set_password(password2)
+            user.is_active = False
+            user.save()
+            return Response( { 
+                'success': True , 
+                'detail' :'Account activation code as been sent to your email'
+                },
+                status=status.HTTP_200_OK
+                )
+        return Response({'success':False , 'detail':'Invalid email address'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserAccountActivationCodeConfirmApiView(generics.GenericAPIView):
+    serializer_class = UserAccountActivationCodeConfirmSerializer
+    def post(self, request) :
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        code = serializer.validated_data['code']
+        is_code_valid = AccountActivationCode.objects.filter(email=email, code=int(code))
+        if is_code_valid:
+            user = User.objects.get(email=email)
+            user.is_active = True
+            user.save()
+            is_code_valid.first().delete()
+            serializer = UserSerializer(user)
+            tokens = create_jwt_pair_for_user(user)
+            response = {
+                'success': True ,
+                'detail': 'Login is successful',
+                "tokens" : tokens , 
+                'user' : serializer.data 
+            }
+            return Response(response , status=status.HTTP_200_OK)
+
 
 #  authentication views starts
-class UserRegisterApiView(generics.GenericAPIView):
+class UserProfileUpdateApiView(generics.GenericAPIView):
     """
     This view is used in the registration of a new user
     """
     serializer_class = ClientRegisterSerializer
+    permission_classes = [ IsAuthenticated ]
 
     def post(self, request:Response ):
         data = request.data
@@ -121,26 +181,20 @@ class UserRegisterApiView(generics.GenericAPIView):
         if serializer.is_valid(raise_exception=True) :
             first_name = serializer.validated_data['first_name']
             last_name = serializer.validated_data['last_name']
-            email = serializer.validated_data['email']
-            password1 = serializer.validated_data['password1']
-            password2 = serializer.validated_data['password2']
-            if password1 != password2 :
-                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
+            phone_number = serializer.validated_data['phone_number']
+            gender = serializer.validated_data['gender']
             try:
-                user = User.objects.get(email=email)
-                return Response({'success':False ,'message': 'Email already exists'} , status=status.HTTP_400_BAD_REQUEST)
+                user = User.objects.get(id=request.user.id)
             except:
-                user = User.objects.create(first_name=first_name,last_name=last_name,email=email)
-                user.set_password(password2)
-                user.save()
-                # user.is_active = False
-                # token = PasswordResetTokenGenerator().make_token(user)
-                # uuidb64 = urlsafe_base64_encode(force_bytes(user.id))
-                # Thread(target=account_activation_mail, kwargs={
-                #         'email': user.email ,'token': token , 'uuidb64':uuidb64
-                #     }).start()
-                # AccountActivation.objects.create(active_token=token , email=user.email)
-            return Response({'success':True , 'message': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
+                return Response({'success':False ,'detail': 'Email already exists'} , status=status.HTTP_400_BAD_REQUEST)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.phone_number = phone_number
+            user.gender = gender
+            user.is_active = True
+            user.save()
+            serializer = UserSerializer(user)
+            return Response({'success':True , 'detail': 'Profile successfully updated', 'user': serializer.data},status.HTTP_200_OK)
 
 
 
@@ -172,63 +226,6 @@ class ParentRegisterApiView(generics.GenericAPIView):
                         'email': user.email ,'token': token , 'uuidb64':uuidb64
                     }).start()
                 AccountActivation.objects.create(active_token=token , email=user.email)
-            return Response({'success':True , 'message': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
-
-class ParentSchoolJoinApiView(generics.GenericAPIView):
-    serializer_class = ParentSchoolJoinSerializer
-    permission_classes = [IsAuthenticated]
-    def get(self, request, identifier):
-        try:
-            user = Parent.objects.get(user__id=request.user.id)
-        except:
-            return Response({'success':False ,'message': "Access denied"} , status=status.HTTP_401_UNAUTHORIZED)
-        try:
-            for model in School.objects.all():
-                print(model.identifier)
-            school = School.objects.get(identifier=identifier)
-            
-        except:
-            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
-        school.parent_schools.add(user)
-        return Response({'success':True },status.HTTP_200_OK)
-
-class SchoolAdminRegisterApiView(generics.GenericAPIView):
-    serializer_class = SchoolClientRegisterSerializer
-
-    def post(self, request:Response ):
-        data = request.data
-        serializer = self.serializer_class(data=data)
-        if serializer.is_valid(raise_exception=True) :
-            school_identifier = serializer.validated_data['school_identifier']
-            first_name = serializer.validated_data['first_name']
-            last_name = serializer.validated_data['last_name']
-            email = serializer.validated_data['email']
-            password1 = serializer.validated_data['password1']
-            password2 = serializer.validated_data['password2']
-            first_name = serializer.validated_data['first_name']
-            try:
-                school = School.objects.get(identifier=school_identifier)
-            except:
-                return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
-            if password1 != password2 :
-                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
-            try:
-                user = User.objects.get(email=email)
-                return Response({'success':False ,'message': 'Email already exists'} , status=status.HTTP_400_BAD_REQUEST)
-            except:
-                user = User.objects.create(first_name=first_name,last_name=last_name,email=email, is_school_admin=True)
-                user.set_password(password2)
-                user.is_active = False
-                token = PasswordResetTokenGenerator().make_token(user)
-                uuidb64 = urlsafe_base64_encode(force_bytes(user.id))
-                Thread(target=account_activation_mail, kwargs={ 
-                        'email': user.email ,'token': token , 'uuidb64':uuidb64
-                    }).start()
-                # add the user mail and activation token to the database 
-                AccountActivation.objects.create(active_token=token , email=user.email)
-                # create an object of school admin for the current user 
-                admin = SchoolAdmin.objects.create(user=user , is_owner=True)
-                school.admin_schools.add(admin)
             return Response({'success':True , 'message': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
 
 
@@ -278,118 +275,5 @@ class AccountEmailVerificationConfirmApiView(APIView):
         return Response({'success':False , 'message': 'Mail verification is invalid'},status.HTTP_200_OK)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class ParentUsersListCreateApiView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = ParentUserSerializer 
-
-    def post(self, request, *args, **kwargs):
-        referrer = request.GET.get('referrer', None )
-        if referrer != None :
-            try:
-                school = School.objects.get(identifier=referrer)
-            except School.DoesNotExist :
-                return Response({'error': 'School referrer link is not valid'} , status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                user = User.objects.get(email=request.data['email'])
-            except User.DoesNotExist :
-                first_name = request.data['first_name']
-                last_name = request.data['last_name']
-                email = request.data['email']
-                password = request.data['password']
-                password2 = request.data['password2']
-                if password == password2 :
-                    return Response({'error' : 'password does not match'}, status=status.HTTP_400_BAD_REQUEST)
-                user = User(first_name=first_name , last_name=last_name , email=email)
-                user.set_password(password)
-                user.save() 
-            if user.is_parent == True or user.is_management == True :
-                user.is_parent = True
-                user.save()
-                user.school.add(school)
-                serializer = UserSerializer(user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED )
-            else:
-                user.is_parent = True
-                user.save()
-                user.school.add(school)
-                serializer = self.get_serializer(user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED )
-
-        return Response({'error': 'No referrer found'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-
-
-
-"""
-    This view return the list of parent on the a specific school
-"""
-class SchoolParentRetrieve(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = ParentRetrieveUpdateSerializer
-    lookup_field = 'identifier'
-
-    def get(self, request,school_identifier , identifier , *args, **kwargs):
-        print(request.data)
-        try:
-            school = School.objects.get(identifier=school_identifier)
-        except School.DoesNotExist:
-            return Response({'error' : 'School does not exist' } , status=status.HTTP_400_BAD_REQUEST )
-        if User.objects.filter(is_parent=True , identifier=identifier).exists() :
-            parent = User.objects.filter(is_parent=True , identifier=identifier ).first()
-            serializer = self.get_serializer(parent)
-            return Response(serializer.data , status=status.HTTP_200_OK )
-
-        # try:
-        #     parent = User.objects.filter(identifier="'")
-        return super().get(request, *args, **kwargs) 
-
-
-
-class ParentsCreateApiView(GenericAPIView):
-    queryset = User.objects.all()
-    serializer_class = ParentRetrieveUpdateSerializer
-    # def get(self , request , *args , **kwargs ):
-    #     models = self.get_queryset()
-    #     serializer = self.serializer_class(models , many=True)
-    #     return Response(serializer.data)
-
-    def post(self , request , identifier ,*args, **kwargs ):
-        school_identifier = identifier
-        data = request.data
-        serializer = self.serializer_class(data=data)
-        if serializer.is_valid(raise_exception=True):
-            try:
-                school = School.objects.get(identifier=school_identifier)
-            except School.DoesNotExist : 
-                return Response({'error' : 'school does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-            if User.objects.filter(email=serializer.validated_data['email'], is_parent=True).exits():
-                user = User.objects.get(email=serializer.validated_data['email'])
-                user.schools.add(school)
-            else:
-                user = User()
-                return Response({'error' : 'user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-            user_serializer = UserSerializer(user)
-            return Response(serializer.data)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

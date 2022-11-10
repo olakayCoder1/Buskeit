@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'accounts',
     'schools',
     'api',
+    'subscriptions', 
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -142,6 +143,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+PREMBLY_APP_ID = 'app-id'
+PREMBLY_X_API_KEY = 'x-api-key'
+PREMBLY_BASE_URL = 'https://sandbox.myidentitypass.com'
+
+
+PAYSTACK_SECRET_KEY = env('PAYSTACK_SECRET_KEY')
+
 
 REST_FRAMEWORK = {
     "NON_FIELD_ERRORS_KEY" : 'errors',
@@ -159,12 +167,13 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+#  Custom admin dashbord settings
 JAZZMIN_SETTINGS = {
     "site_title": "Buskeit Admin",
     "site_header": "Buskeit",

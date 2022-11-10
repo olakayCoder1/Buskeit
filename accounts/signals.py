@@ -1,7 +1,7 @@
 import string , random
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import User , Student , Parent , ChannelUser
+from .models import User , Student , ChannelUser
 from rest_framework.authtoken.models import Token
 
 def random_string_generator_user(size=15, chars = string.ascii_uppercase + string.digits):
