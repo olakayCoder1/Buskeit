@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 import environ
 from datetime import timedelta
+import django_heroku
+import dj_database_url
 
 env = environ.Env()
 environ.Env.read_env()
@@ -140,7 +142,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS  = [
     (BASE_DIR / "static"),
 ]
-
+django_heroku.settings(locals())
 
 MEDIA_URL='/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR , 'media')
