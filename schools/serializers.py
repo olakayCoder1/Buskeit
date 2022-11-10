@@ -36,12 +36,11 @@ class ChannelActivationCodeConfirmSerializer(serializers.Serializer):
 
 
 class ChannelUserSerializer(serializers.ModelSerializer):
-    user = UserInlineSerializer(read_only=True)
     created_at = serializers.SerializerMethodField('get_created_at') 
     updated_at = serializers.SerializerMethodField('get_updated_at') 
     class Meta:  
         model = ChannelUser
-        fields = ['identifier', 'user' , 'channel','is_admin', 'is_staff' , 'created_at' , 'updated_at' ]
+        fields = ['identifier', 'channel','is_admin', 'is_staff' , 'created_at' , 'updated_at' ]
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
@@ -101,3 +100,8 @@ class StudentPickUpVerificationHistorySerializer(serializers.ModelSerializer):
         model = StudentPickUpVerification
         fields = ['date' ,'completed', 'created_at' , 'updated_at'] 
         # fields = [ 'student' , 'date' , 'created_at' , 'updated_at']
+
+
+
+class ChannelUserUploadFileSerializer(serializers.Serializer):
+    file = serializers.FileField()

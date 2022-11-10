@@ -1,21 +1,75 @@
-from .models import User , Student 
+from .models import User , Student , ChannelUser
 from rest_framework import serializers
-from rest_framework import status 
+from schools.models import Channel
 # from schools.serializers import *
+
+
+class ChannelsSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField('get_created_at') 
+    updated_at = serializers.SerializerMethodField('get_updated_at') 
+    class Meta:
+        model = Channel
+        fields = ['identifier','name','email', 'phone_number', 'address' ,'invitation_code' ,'created_at' ,  'updated_at']  
+
+        extra_kwargs = {
+            'identifier':{'read_only' : True},
+            'is_verified':{'read_only' : True}, 
+            'invitation_code':{'read_only' : True}, 
+            'created_at':{'read_only' : True}, 
+            'updated_at':{'read_only' : True}, 
+        }
+
+    def get_created_at(self,obj): 
+        return obj.created_at.strftime("%m-%d-%Y")
+    def get_updated_at(self,obj): 
+        return obj.updated_at.strftime("%m-%d-%Y")
+
+
+
+class ChannelUserSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField('get_created_at') 
+    updated_at = serializers.SerializerMethodField('get_updated_at') 
+    channel = ChannelsSerializer(read_only=True)
+    class Meta:  
+        model = ChannelUser
+        fields = ['identifier', 'channel','is_admin', 'is_staff' , 'created_at' , 'updated_at' ]
+
+        extra_kwargs = {
+            'identifier':{'read_only' : True}, 
+            'is_active':{'read_only' : True},
+            'created_at':{'read_only' : True}, 
+            'updated_at':{'read_only' : True}, 
+        }
+
+    def get_created_at(self,obj): 
+        return obj.created_at.strftime("%m-%d-%Y")
+
+    def get_updated_at(self,obj): 
+        return obj.updated_at.strftime("%m-%d-%Y")
+
+
+
 
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # school = SchoolInlineSerializer(read_only=True , many=True) 
+    channel_accounts = serializers.SerializerMethodField('user_channels')
     class Meta:
-        model = User
-        fields = ['identifier', 'email' , 'first_name' , 'last_name','is_staff']
+        model = User 
+        fields = ['identifier', 'email' , 'first_name' , 'last_name','is_active', 'is_staff','is_verified', 'channel_accounts']
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
             'is_active':{'read_only' : True},
+            'is_active':{'read_only' : True},
+            'is_verified':{'read_only' : True},
         }
-        
+
+
+    def user_channels(self,obj):
+        channel = ChannelUser.objects.filter(user=obj)
+        serializer = ChannelUserSerializer(channel, many=True)
+        return serializer.data
 
 
 class ManagementRegisterSerializer(serializers.ModelSerializer):

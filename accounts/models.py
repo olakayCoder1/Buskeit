@@ -116,4 +116,4 @@ class ChannelUser(models.Model):
 
 
     def __str__(self) -> str:
-        return self.user.email
+        return self.first_name 

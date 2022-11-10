@@ -8,7 +8,6 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [ 
 
-    # path('auth/register', views.UserRegisterApiView.as_view(), name='register'),
     path('auth/register', views.UserRegisterWithPremblyEmailConfirmApiView.as_view(), name='register'),
     path('auth/register/profile', views.UserProfileUpdateApiView.as_view(), name='register-profile'),
     path('auth/code/verify', views.UserAccountActivationCodeConfirmApiView.as_view(), name='code-confirm'),
@@ -19,12 +18,14 @@ urlpatterns = [
     path('auth/password/<str:token>/<str:uuidb64>/reset', views.SetNewPasswordTokenCheckApi.as_view(), name='password_reset_done'),
     path('auth/password/change', views.ChangePasswordView.as_view(), name='password_change'),
 
-    
- 
 
     path('channels', views.ChannelsListCreateApiView.as_view() , name='list-create-channel'),
+    path('channels/code/verify', views.ChannelActivationCodeConfirmApiView.as_view() , name='channel-code-verify'),
     path('channels/<str:identifier>', views.ChannelsRetrieveUpdateDestroyApiView.as_view(), name='retrieve-update-destroy-channel'),
-    path('channels/<str:invitation_code>/join', views.ChannelUserJoinApiView.as_view(), name='join-channel'), 
+    path('channels/<str:identifier>/users/upload', views.ChannelUserUploadCsvApiView.as_view(), name='channel-users-upload'),
+    path('channels/users/join', views.ChannelUserJoinApiView.as_view(), name='join-channel'), 
+
+
     path('channels/<str:channel_identifier>/students', views.ChannelStudentListCreateApiView.as_view(), name='list-create-channel-students'),
     path('channels/<str:channel_identifier>/users/<str:channel_user_identifier>/kids', views.ChannelUserKidsListAPIView.as_view(), name='list-channel-user-kids'), 
     path('channels/<str:channel_identifier>/kids', views.ChannelParentKidsListAPIView.as_view() , name='parent-retrieve-kid-list'),

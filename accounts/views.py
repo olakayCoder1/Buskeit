@@ -123,7 +123,8 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
         if User.objects.filter(email=email).exists():
             return Response({'success': False , 'detail':'Email already exist'}, status=status.HTTP_400_BAD_REQUEST)
         # At this point we can now call the prembly APi to verify the email
-        verify = PremblyServices.user_signup_verification_mail(email=email)
+        verify = True
+        # verify = PremblyServices.user_signup_verification_mail(email=email)
         if verify :
             code = ''.join(random.choice(string.digits) for _ in range(4))
             AccountActivationCode.objects.create(email=email, code=int(code))

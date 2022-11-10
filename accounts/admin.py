@@ -3,6 +3,10 @@ from .models import AccountActivation, User  , Student , ChannelUser
 from django.contrib.auth.admin import UserAdmin
 
 
+
+class ChannelUserModelAdmin(admin.ModelAdmin):
+    list_display = ['first_name','last_name',  'email' , 'created_at' , 'updated_at'] 
+
 class CustomUserAdminConfig(UserAdmin):
     model = User
     search_fields = ('email', 'first_name',)
@@ -27,5 +31,5 @@ class CustomUserAdminConfig(UserAdmin):
 admin.site.register(User, CustomUserAdminConfig) 
 admin.site.register(Student) 
 admin.site.register(AccountActivation) 
-admin.site.register(ChannelUser) 
+admin.site.register(ChannelUser, ChannelUserModelAdmin) 
     

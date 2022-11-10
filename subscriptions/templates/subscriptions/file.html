@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input id='fileid' type='file' hidden/>
+    <input id='buttonid' type='button' value='Upload MB' onclick="uploadFile()" />
+    <script>
+        async function uploadFile(e) {
+            let formData = new FormData(); 
+            const fileupload = document.getElementById('fileid')          
+            formData.append("file", fileupload.files[0]);
+            await fetch('/upload.php', {
+              method: "POST", 
+              body: formData
+            });    
+            alert('The file has been uploaded successfully.');
+        }
+    </script>
+</body>
+</html>
