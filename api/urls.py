@@ -19,6 +19,7 @@ urlpatterns = [
     path('auth/password/change', views.ChangePasswordView.as_view(), name='password_change'),
 
 
+    
     path('channels', views.ChannelsListCreateApiView.as_view() , name='list-create-channel'),
     path('channels/code/verify', views.ChannelActivationCodeConfirmApiView.as_view() , name='channel-code-verify'),
     path('channels/<str:identifier>', views.ChannelsRetrieveUpdateDestroyApiView.as_view(), name='retrieve-update-destroy-channel'),

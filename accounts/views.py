@@ -138,10 +138,9 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
             return Response( { 
                 'success': True , 
                 'detail' :'Account activation code as been sent to your email'
-                },
-                status=status.HTTP_200_OK
-                )
+                }, status=status.HTTP_200_OK  )
         return Response({'success':False , 'detail':'Invalid email address'}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 class UserAccountActivationCodeConfirmApiView(generics.GenericAPIView):
     serializer_class = UserAccountActivationCodeConfirmSerializer
