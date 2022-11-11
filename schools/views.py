@@ -6,7 +6,8 @@ from accounts.utils import PremblyServices
 from accounts.mail_services import MailServices
 from accounts.permissions import IsAccountVerified
 from .models import  Channel  , StudentPickUpVerification , ChannelActivationCode
-from .permissions import IsStudentParent , IsStudentParentOrChannelStaff
+from .permissions import IsStudentParent , IsStudentParentOrChannelStaff , IsChannelAdmin
+from .paginations import CustomPagination
 from .serializers import  (
     ChannelsSerializer , ChannelJoinSerializer , StudentPickUpVerificationHistorySerializer,
      ChannelUserSerializer , ChannelUserFullDetailSerializer , ChannelActivationCodeConfirmSerializer ,
@@ -52,40 +53,48 @@ class ChannelsListCreateApiView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True) 
         name = serializer.validated_data['name']
         rc_number = serializer.validated_data['rc_number']
+        company_type = serializer.validated_data['company_type']
         email = serializer.validated_data['email'] 
         phone_number = serializer.validated_data['phone_number']
         address = serializer.validated_data['address']
-        verify_channel = PremblyServices.channel_creation_verification(serializer.validated_data['rc_number'])
-        if verify_channel == None :
-            return Response({'success':False , 'detail':'RC_NUMBER is not valid'}, status=status.HTTP_400_BAD_REQUEST)
-        if verify_channel['data']['company_name'] != serializer.validated_data['name']:
-            return Response({'success': False , 'detail': 'Company name is not correct'}, status=status.HTTP_400_BAD_REQUEST)
+        # verify_channel = PremblyServices.channel_creation_verification(serializer.validated_data['rc_number'])
+        # if verify_channel == None :
+        #     return Response({'success':False , 'detail':'RC_NUMBER is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+        # if verify_channel['data']['company_name'] != serializer.validated_data['name']:
+        #     return Response({'success': False , 'detail': 'Company name is not correct'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if verify_channel['data']['email_address'] != serializer.validated_data['email']:
-            return Response({'success': False , 'detail': 'Company name is not correct'}, status=status.HTTP_400_BAD_REQUEST)
+        # if verify_channel['data']['email_address'] != serializer.validated_data['email']:
+        #     return Response({'success': False , 'detail': 'Company name is not correct'}, status=status.HTTP_400_BAD_REQUEST)
 
-        channel = Channel.objects.create(name=name, address=address ,email=email ,  rc_number=rc_number , phone_number=phone_number)
+        channel = Channel.objects.create(name=name, address=address ,email=email ,  rc_number=rc_number , phone_number=phone_number , company_type=company_type)
         code = ''.join(random.choice(string.digits) for _ in range(4))
         ChannelActivationCode.objects.create(email=email, code=int(code))
-        Thread(target=MailServices.user_register_verification_email, kwargs={
+        Thread(target=MailServices.channel_creation_verification_email , kwargs={
                         'email': email , 'code' : code
         }).start()
         admin = ChannelUser.objects.create(user=user, first_name=user.first_name, last_name=user.last_name, email=user.email , is_admin=True, is_staff=True , channel=channel)
-        serializer = self.serializer_class(channel)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response( {  
+                'success': True , 
+                'detail' :'Channel activation code as been sent to the email',
+                'email': email
+                }, status=status.HTTP_200_OK  )
+        # serializer = self.serializer_class(channel)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
 class ChannelActivationCodeConfirmApiView(generics.GenericAPIView):
     serializer_class = ChannelActivationCodeConfirmSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request) :
         data = request.data
+        user = User.objects.get(id=request.user.id)
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         code = serializer.validated_data['code']
-        is_code_valid = ChannelActivationCode.objects.filter(email=email, code=int(code))
+        is_code_valid = ChannelActivationCode.objects.filter(email=email, code=int(code) , user=user).exists()
         if is_code_valid:
             channel = Channel.objects.get(email=email)
             channel.is_verified = True
@@ -93,6 +102,7 @@ class ChannelActivationCodeConfirmApiView(generics.GenericAPIView):
             is_code_valid.first().delete()
             serializer = ChannelsSerializer(channel)
             return Response( serializer.data , status=status.HTTP_200_OK)
+        return Response({'success':False ,'detail': 'Channel activation code is invalid'} , status=status.HTTP_400_BAD_REQUEST)
 
 
 class ChannelsRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView): 
@@ -126,17 +136,19 @@ class ChannelUserJoinApiView(generics.GenericAPIView):
             return Response({'success':False ,'detail': "Your data is not available in the channel! Contact the school admin"} , status=status.HTTP_401_UNAUTHORIZED)
 
 
-class ChannelStudentListCreateApiView(generics.GenericAPIView): 
+class ChannelStudentListCreateApiView(generics.ListCreateAPIView): 
+    queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    pagination_class = CustomPagination 
  
     def get_queryset(self):
-        student = Student.objects.filter(channel__identifier=self.kwargs.get('channel_identifier'))
+        student = Student.objects.filter(channel__identifier=self.kwargs.get('identifier'))
         if student.exists():
             return student
         return None
         
     #  get the student of provided channel identifier
-    def get(self, request , channel_identifier ):
+    def get(self, request , identifier ):
         query = self.get_queryset()
         if query == None :
             return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
@@ -144,9 +156,9 @@ class ChannelStudentListCreateApiView(generics.GenericAPIView):
         return  Response(serializer.data , status=status.HTTP_200_OK) 
 
 
-    def post(self, request , channel_identifier ):
+    def post(self, request , identifier ):
         try:
-            channel = Channel.objects.get(identifier=self.kwargs.get('channel_identifier'))
+            channel = Channel.objects.get(identifier=self.kwargs.get('identifier'))
         except:
             return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(data=request.data)
@@ -265,9 +277,9 @@ class StudentPickUpVerificationHistoryApiView(generics.GenericAPIView) :
     
 
 class ChannelUserUploadCsvApiView(generics.CreateAPIView):
+    queryset = ChannelUser.objects.all()
     serializer_class = ChannelUserUploadFileSerializer
-    permission_classes = [IsAuthenticated]
-
+    permission_classes = [IsAuthenticated, IsChannelAdmin]
 
     def post(self, request, identifier , *args, **kwargs):
         try:
@@ -291,4 +303,30 @@ class ChannelUserUploadCsvApiView(generics.CreateAPIView):
             new_user.save()
         
         return Response({'success': True ,'detail':'User uploaded successfully' }, status=status.HTTP_201_CREATED)
+
+
+class ChannelStudentUploadCsvApiView(generics.CreateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = ChannelUserUploadFileSerializer
+    permission_classes = [IsAuthenticated, IsChannelAdmin ]
+
+    def post(self, request, identifier , *args, **kwargs):
+        try:
+            channel = Channel.objects.get(identifier=identifier)
+        except:
+            return Response({'success':False , 'detail':'Channel does not exist'})
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        file = serializer.validated_data['file']
+        reader = pd.read_csv(file)
+        for _ , row in reader.iterrows():
+            try:
+                first_name = row['Staff Sname'] 
+                last_name = row['Staff Oname']
+            except:
+                return Response({'success':False, 'detail':'Invalid csv format'}, status=status.HTTP_400_BAD_REQUEST)
+            new_user = Student.objects.create(first_name=first_name ,last_name=last_name ,channel=channel )
+            new_user.save()
+        
+        return Response({'success': True ,'detail':'Student uploaded successfully' }, status=status.HTTP_201_CREATED)
     

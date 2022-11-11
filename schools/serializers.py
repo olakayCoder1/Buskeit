@@ -14,7 +14,7 @@ class ChannelsSerializer(serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField('get_updated_at') 
     class Meta:
         model = Channel
-        fields = ['identifier','name','email','rc_number','phone_number', 'address' ,'invitation_code', 'is_active','is_verified' ,'created_at' ,  'updated_at']  
+        fields = ['identifier','name','email','rc_number','phone_number','company_type', 'address' ,'invitation_code', 'is_active','is_verified' ,'created_at' ,  'updated_at']  
 
         extra_kwargs = {
             'identifier':{'read_only' : True},

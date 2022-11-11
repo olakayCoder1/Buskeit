@@ -12,6 +12,7 @@ class Channel(models.Model):
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     rc_number = models.PositiveIntegerField(null=True , blank=True )
+    company_type = models.CharField(max_length=10 , null=True , blank=True )
     address = models.TextField(null=True, blank=True)
     invitation_code = models.CharField(max_length=11, unique=True ,  blank=True ,  null=True )
     image = models.ImageField(upload_to=upload_to , null=True , blank=True)
@@ -30,9 +31,11 @@ class Channel(models.Model):
 
 
 class ChannelActivationCode(models.Model):
+    user = models.ForeignKey('accounts.User' , on_delete=models.CASCADE , null=True , blank=True)
     email = models.EmailField()
     code = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    
 class StudentPickUpVerification(models.Model):
     student = models.ForeignKey('accounts.Student' , on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)

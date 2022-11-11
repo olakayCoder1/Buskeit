@@ -100,6 +100,7 @@ class MailServices():
         message["To"] = receiver_email
         html = render_to_string('accounts/account-activation-with-code.html', {'code':code})
         part = MIMEText(html, "html")
+        print(code)
         # Add HTML/plain-text parts to MIMEMultipart message
         message.attach(part)
         # Create secure connection with server and send email

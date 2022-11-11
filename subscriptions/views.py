@@ -8,10 +8,16 @@ from .models import PaymentTransaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics , status
-
+from accounts.models import ChannelUser 
 # Create your views here.
 
 def index(request):
+    user = ChannelUser.objects.get(id=30)
+    print(user.__class__) 
+    m  = user.__class__.objects.all()
+    for k in m:
+        print(k.first_name) 
+
     if request.method == 'POST':
         print('Yes')
         email = request.POST.get('email')

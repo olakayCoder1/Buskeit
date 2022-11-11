@@ -4,6 +4,18 @@ from schools.models import Channel
 # from schools.serializers import *
 
 
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField('get_created_at')
+    class Meta:
+        model = Student
+        fields =['identifier', 'first_name' , 'last_name', 'created_at']
+
+    def get_created_at(self,obj): 
+        return obj.created_at.strftime("%m-%d-%Y") 
+
+
 class ChannelsSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField('get_created_at') 
     updated_at = serializers.SerializerMethodField('get_updated_at') 
@@ -29,10 +41,12 @@ class ChannelsSerializer(serializers.ModelSerializer):
 class ChannelUserSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField('get_created_at') 
     updated_at = serializers.SerializerMethodField('get_updated_at') 
+    students = serializers.SerializerMethodField('get_students') 
     channel = ChannelsSerializer(read_only=True)
+
     class Meta:  
         model = ChannelUser
-        fields = ['identifier', 'channel','is_admin', 'is_staff' , 'created_at' , 'updated_at' ]
+        fields = ['identifier', 'channel','is_admin', 'is_staff' , 'created_at' , 'updated_at' , 'students']
 
         extra_kwargs = {
             'identifier':{'read_only' : True}, 
@@ -40,6 +54,13 @@ class ChannelUserSerializer(serializers.ModelSerializer):
             'created_at':{'read_only' : True}, 
             'updated_at':{'read_only' : True}, 
         }
+
+    # Inject the student of the current object to the return response
+    def get_students(self, obj): 
+        students = Student.objects.filter(parent=obj, channel__id=obj.channel.id)
+        serializer = StudentSerializer(students, many=True)
+        return  serializer.data
+    
 
     def get_created_at(self,obj): 
         return obj.created_at.strftime("%m-%d-%Y")
@@ -65,17 +86,13 @@ class UserSerializer(serializers.ModelSerializer):
             'is_verified':{'read_only' : True},
         }
 
-
     def user_channels(self,obj):
         channel = ChannelUser.objects.filter(user=obj)
         serializer = ChannelUserSerializer(channel, many=True)
         return serializer.data
 
 
-class ManagementRegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        field = [ 'first_name', 'last_name' , 'email' , 'password' ]
+
 
 
 class ParentUserSerializer(serializers.ModelSerializer):
@@ -92,14 +109,7 @@ class ParentUserSerializer(serializers.ModelSerializer):
 
 
 
-class StudentSerializer(serializers.ModelSerializer):
-    created_at = serializers.SerializerMethodField('get_created_at')
-    class Meta:
-        model = Student
-        fields =['identifier', 'first_name' , 'last_name', 'created_at']
 
-    def get_created_at(self,obj): 
-        return obj.created_at.strftime("%m-%d-%Y") 
 
 
 class ParentRetrieveUpdateSerializer(serializers.ModelSerializer):

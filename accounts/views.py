@@ -1,30 +1,28 @@
+import random
+import string
+from threading import Thread
+
 from django.contrib.auth import authenticate
-from rest_framework import generics , status 
-from rest_framework.generics import GenericAPIView
-from rest_framework.views import APIView
-from rest_framework.decorators import permission_classes
-from rest_framework.response import Response
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_str , force_bytes, DjangoUnicodeDecodeError, force_str
-from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
-from rest_framework.permissions import IsAuthenticated 
-from .serializers import (
-    ChangePasswordSerializer,  UserSerializer ,
-    ResetPasswordRequestEmailSerializer , SetNewPasswordSerializer,
-    ClientRegisterSerializer, LoginSerializer ,
-    UserEmailPremblyConfirmSerializer , UserAccountActivationCodeConfirmSerializer
-)
-from .models import (
-    User , Student , AccountActivation ,
-    AccountActivationCode
-)
+from django.utils.encoding import (DjangoUnicodeDecodeError, force_bytes,
+                                   force_str, smart_str)
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from rest_framework import generics, status
+from rest_framework.decorators import permission_classes
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .mail_services import MailServices
+from .models import AccountActivation, AccountActivationCode, Student, User
+from .serializers import (ChangePasswordSerializer, ClientRegisterSerializer,
+                          LoginSerializer, ResetPasswordRequestEmailSerializer,
+                          SetNewPasswordSerializer,
+                          UserAccountActivationCodeConfirmSerializer,
+                          UserEmailPremblyConfirmSerializer, UserSerializer)
 from .tokens import create_jwt_pair_for_user
 from .utils import PremblyServices
-from threading import Thread
-import string
-import random
-
 
 
 class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
@@ -137,7 +135,8 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
             user.save()
             return Response( { 
                 'success': True , 
-                'detail' :'Account activation code as been sent to your email'
+                'detail' :'Account activation code as been sent to your email',
+                'email': user.email
                 }, status=status.HTTP_200_OK  )
         return Response({'success':False , 'detail':'Invalid email address'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -154,6 +153,7 @@ class UserAccountActivationCodeConfirmApiView(generics.GenericAPIView):
         if is_code_valid:
             user = User.objects.get(email=email)
             user.is_active = True
+            user.is_verified = True
             user.save()
             is_code_valid.first().delete()
             serializer = UserSerializer(user)
@@ -222,7 +222,7 @@ class ParentRegisterApiView(generics.GenericAPIView):
                 user.is_active = False
                 token = PasswordResetTokenGenerator().make_token(user)
                 uuidb64 = urlsafe_base64_encode(force_bytes(user.id))
-                Thread(target=account_activation_mail, kwargs={
+                Thread(target=MailServices.account_activation_mail, kwargs={
                         'email': user.email ,'token': token , 'uuidb64':uuidb64
                     }).start()
                 AccountActivation.objects.create(active_token=token , email=user.email)

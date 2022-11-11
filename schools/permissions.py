@@ -7,6 +7,12 @@ class IsStudentParent(permissions.DjangoModelPermissions):
         return request.user.id == obj.parent.user.id 
 
 
+class IsChannelAdmin(permissions.DjangoModelPermissions):
+     
+    def has_object_permission(self, request, view, obj):
+        return obj.__class__.objects.filter(user__id=request.user.id, is_admin=True).exist()
+
+
 class IsStudentParentOrChannelStaff(permissions.DjangoModelPermissions):
      
     def has_object_permission(self, request, view, obj):
