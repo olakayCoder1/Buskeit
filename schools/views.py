@@ -68,7 +68,7 @@ class ChannelsListCreateApiView(generics.ListCreateAPIView):
 
         channel = Channel.objects.create(name=name, address=address ,email=email ,  rc_number=rc_number , phone_number=phone_number , company_type=company_type)
         code = ''.join(random.choice(string.digits) for _ in range(4))
-        ChannelActivationCode.objects.create(email=email, code=int(code))
+        ChannelActivationCode.objects.create(email=email, code=int(code), user=user)
         Thread(target=MailServices.channel_creation_verification_email , kwargs={
                         'email': email , 'code' : code
         }).start()

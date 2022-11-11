@@ -163,6 +163,7 @@ PREMBLY_BASE_URL = 'https://api.myidentitypass.com'
 PAYSTACK_SECRET_KEY = env('PAYSTACK_SECRET_KEY')
 
 
+
 REST_FRAMEWORK = {
     "NON_FIELD_ERRORS_KEY" : 'errors',
     "DEFAULT_AUTHENTICATION_CLASSES" : (
