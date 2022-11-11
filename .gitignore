@@ -4,7 +4,6 @@
 *.pyc
 __pycache__/
 local_settings.py
-db.sqlite3
 
 .env 
 
@@ -32,8 +31,6 @@ MANIFEST
 *.spec
 pip-log.txt
 pip-delete-this-directory.txt
-
-db.sqlite3
 *.mo
 
 .python-version 

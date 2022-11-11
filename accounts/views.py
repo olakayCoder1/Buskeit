@@ -160,7 +160,7 @@ class UserAccountActivationCodeConfirmApiView(generics.GenericAPIView):
             tokens = create_jwt_pair_for_user(user)
             response = {
                 'success': True ,
-                'detail': 'Login is successful',
+                'detail': 'Account activated successfully',
                 "tokens" : tokens , 
                 'user' : serializer.data 
             }
