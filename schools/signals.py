@@ -7,9 +7,8 @@ from .models import Channel
 
 
 
-def random_string_generator_channel_invitation_code(size=7, chars = string.ascii_uppercase + string.digits):
+def random_string_generator_channel_invitation_code(size=6, chars = string.ascii_uppercase + string.digits):
     result = ''.join(random.choice(chars) for _ in range(size))
-    result = 'ICCH'+result
     if Channel.objects.filter(invitation_code=result).exists():
         return random_string_generator_channel_invitation_code(size , chars)
     return result

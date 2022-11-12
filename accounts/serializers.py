@@ -16,7 +16,7 @@ class StudentSerializer(serializers.ModelSerializer):
         return obj.created_at.strftime("%m-%d-%Y") 
 
 
-class ChannelsSerializer(serializers.ModelSerializer):
+class ChannelsInSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField('get_created_at') 
     updated_at = serializers.SerializerMethodField('get_updated_at') 
     class Meta:
@@ -42,7 +42,7 @@ class ChannelUserSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField('get_created_at') 
     updated_at = serializers.SerializerMethodField('get_updated_at') 
     students = serializers.SerializerMethodField('get_students') 
-    channel = ChannelsSerializer(read_only=True)
+    channel = ChannelsInSerializer(read_only=True)
 
     class Meta:  
         model = ChannelUser
@@ -140,13 +140,53 @@ class UserInlineSerializer(serializers.ModelSerializer):
 
 
 
+
+class StudentParentInlineSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField('get_created_at') 
+    updated_at = serializers.SerializerMethodField('get_updated_at') 
+
+    class Meta:  
+        model = ChannelUser
+        fields = ['identifier','first_name', 'last_name','email', 'is_parent','is_admin', 'is_staff' , 'created_at' , 'updated_at']
+
+        extra_kwargs = {
+            'identifier':{'read_only' : True}, 
+            'is_active':{'read_only' : True},
+            'created_at':{'read_only' : True}, 
+            'updated_at':{'read_only' : True}, 
+        }
+
+    def get_created_at(self,obj): 
+        return obj.created_at.strftime("%m-%d-%Y") 
+    def get_updated_at(self,obj):    
+        return obj.updated_at.strftime("%m-%d-%Y")
+
 class StudentSerializer(serializers.ModelSerializer):
-    # parent = ParentInlineSerializer(read_only=True)
+    parent = StudentParentInlineSerializer(read_only=True)
     created_at = serializers.SerializerMethodField('get_created_at')
     # updated_at = serializers.SerializerMethodField('get_updated_at')
     class Meta :
         model = Student
         fields = ['identifier', 'first_name','last_name','middle_name',  'parent' , 'created_at']
+
+        extra_kwargs = {
+            'identifier':{'read_only' : True},
+            'created_at':{'read_only' : True},
+            'parent':{'read_only' : True},
+        }
+
+    def get_created_at(self,obj): 
+        return obj.created_at.strftime("%m-%d-%Y")
+
+    
+class StudentFullDetailSerializer(serializers.ModelSerializer):
+    parent = StudentParentInlineSerializer(read_only=True)
+    created_at = serializers.SerializerMethodField('get_created_at')
+    channel = ChannelsInSerializer(read_only=True)
+    # updated_at = serializers.SerializerMethodField('get_updated_at')
+    class Meta :
+        model = Student
+        fields = ['identifier', 'first_name','last_name','middle_name',  'parent' ,'channel', 'created_at']
 
         extra_kwargs = {
             'identifier':{'read_only' : True},

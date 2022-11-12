@@ -13,7 +13,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from drf_yasg.utils import swagger_auto_schema
 from .mail_services import MailServices
 from .models import AccountActivation, AccountActivationCode, Student, User
 from .serializers import (ChangePasswordSerializer, ClientRegisterSerializer,
@@ -109,6 +109,11 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
     serializer_class = UserEmailPremblyConfirmSerializer
+
+    @swagger_auto_schema(
+        operation_description="This endpoint handle the creation of user",
+        operation_summary="Register new user"
+    )
     def post(self, request) :
         data = request.data
         serializer = self.serializer_class(data=data)

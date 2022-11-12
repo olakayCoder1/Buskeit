@@ -40,11 +40,15 @@ class ChannelUserSerializer(serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField('get_updated_at') 
     class Meta:  
         model = ChannelUser
-        fields = ['identifier', 'channel','is_admin', 'is_staff' , 'created_at' , 'updated_at' ]
+        fields = ['identifier','first_name', 'last_name','email' , 'channel','is_parent','is_admin', 'is_staff' , 'created_at' , 'updated_at' ]
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
             'is_active':{'read_only' : True},
+            'channel':{'read_only' : True}, 
+            'is_parent':{'read_only' : True}, 
+            'is_admin':{'read_only' : True}, 
+            'is_staff':{'read_only' : True}, 
             'created_at':{'read_only' : True}, 
             'updated_at':{'read_only' : True}, 
         }
@@ -57,11 +61,16 @@ class ChannelUserSerializer(serializers.ModelSerializer):
 
     
     
-
+class MapStudentsToParentSerializer(serializers.Serializer):    
+    students = serializers.ListField()
+    def validate(self, attrs):
+        if len(attrs['students']) == 0:
+            raise serializers.ValidationError({'student':'Students list cannot be empty'})
+        return super().validate(attrs)
 
 class ChannelUserFullDetailSerializer(serializers.ModelSerializer):
     user = UserInlineSerializer(read_only=True)
-    children = serializers.SerializerMethodField('get_children')
+    children = serializers.SerializerMethodField('get_children')       
     created_at = serializers.SerializerMethodField('get_created_at') 
     updated_at = serializers.SerializerMethodField('get_updated_at') 
     class Meta:  
@@ -73,7 +82,7 @@ class ChannelUserFullDetailSerializer(serializers.ModelSerializer):
             'is_active':{'read_only' : True},
             'created_at':{'read_only' : True}, 
             'updated_at':{'read_only' : True}, 
-        }
+        }      
 
     def get_children(self, obj):
         students = Student.objects.filter(channel__id=obj.channel.id , parent__id=obj.id)
