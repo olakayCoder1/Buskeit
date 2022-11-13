@@ -19,4 +19,7 @@ Schools can also leverage this app for proper student administration/planning an
 ## CONTRIBUTORS
 | SN | USER | ROLE |PROFILE|
 | ------- | ----- | ------------- | ------------- |
-| 1 | Olanrewaju AbdulKabeer | _Backend_| _[olakayCoder1](https://github.com/olakayCoder1)_|
+| 1 | Olanrewaju AbdulKabeer | _Backend developer_| _[olakayCoder1](https://github.com/olakayCoder1)_|
+| 1 | David Odejobi | _Mobile developer_| __|
+| 1 | Praise Obende | _Frontend developer_| __|
+| 1 | Ovie Igere | _Product designer_| __|
