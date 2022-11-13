@@ -6,5 +6,5 @@ from . import views
 
 urlpatterns = [ 
     path('', views.index),
-    path('verify/<str:payment_reference>', views.ConfirmPaymentApiView.as_view()),
+    # path('verify/<str:payment_reference>', views.ConfirmPaymentApiView.as_view()),
 ]

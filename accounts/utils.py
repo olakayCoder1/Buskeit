@@ -11,14 +11,12 @@ class PremblyServices:
                 'x-api-key':  str(settings.PREMBLY_X_API_KEY),
                 'app-id' : str(settings.PREMBLY_APP_ID)   
             } 
-        print(settings.PREMBLY_BASE_URL)
         data = {'email': email }  
         response = requests.post(url , headers=headers , data=data )
 
         if response.status_code == 200  :
             return response.json()
         else:
-            print(response.status_code)
             return False
 
 
@@ -33,7 +31,6 @@ class PremblyServices:
         response = requests.post(url , headers=headers , data=data )
 
         if response.status_code == 200  :
-            print(response.json())
             return response.json()
         else:
             return None

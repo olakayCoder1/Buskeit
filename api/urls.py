@@ -28,6 +28,7 @@ urlpatterns = [
     path('channels/<str:identifier>/students/verify', views.ChannelVerifiedPickedStudentsAPIView.as_view(), name='list-channel-students-verify'),
     path('channels/<str:identifier>/students/upload', views.ChannelStudentUploadCsvApiView.as_view(), name='channel-students-upload'),
     path('channels/<str:identifier>/parents', views.ChannelParentsListCreateAPIView.as_view(), name='list-create-channel-parents'),
+    path('channels/<str:channel_identifier>/parents/<str:channel_user_identifier>/students', views.ChannelParentKidsListAPIView.as_view(), name='retrieve-parent-children-in-channel'),
     path('channels/<str:identifier>/parents/upload', views.ChannelUserUploadCsvApiView.as_view(), name='channel-users-upload'),
 
 
@@ -39,8 +40,13 @@ urlpatterns = [
 
     path('students/<str:identifier>', views.StudentRetrieveUpdateDestroyAPIView.as_view(), name='retrieve-update-student'),
     path('students/<str:identifier>/verify', views.StudentPickUpVerificationApiView.as_view(), name='verify-student-picked'),
-    path('students/<str:identifier>/history', views.StudentPickUpVerificationHistoryApiView.as_view(), name='retrieve-student-verification-history'), 
+    path('students/<str:identifier>/history', views.StudentPickUpVerificationHistoryApiView.as_view(), name='retrieve-student-verification-history'),
 
+
+
+    path('users/profile/update', views.UserProfileUpdateApiView.as_view(), name='user-profile-update'), 
+    path('users/profile-image/upload', views.UserProfileImageUploadApiView.as_view(), name='user-profile-image-upload'), 
+ 
 
 
 ] 

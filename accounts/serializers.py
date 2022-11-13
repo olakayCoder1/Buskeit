@@ -75,12 +75,13 @@ class ChannelUserSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     channel_accounts = serializers.SerializerMethodField('user_channels')
-    class Meta:
+    image = serializers.SerializerMethodField('get_image')  
+    class Meta: 
         model = User 
-        fields = ['identifier', 'email' , 'first_name' , 'last_name','is_active', 'is_staff','is_verified', 'channel_accounts']
+        fields = ['identifier', 'email' , 'first_name' , 'last_name', 'image','is_active', 'is_staff','is_verified', 'channel_accounts']
 
         extra_kwargs = {
-            'identifier':{'read_only' : True},
+            'identifier':{'read_only' : True}, 
             'is_active':{'read_only' : True},
             'is_active':{'read_only' : True},
             'is_verified':{'read_only' : True},
@@ -90,6 +91,10 @@ class UserSerializer(serializers.ModelSerializer):
         channel = ChannelUser.objects.filter(user=obj)
         serializer = ChannelUserSerializer(channel, many=True)
         return serializer.data
+
+
+    def get_image(self, obj):
+        return obj.image.url  
 
 
 
@@ -108,9 +113,10 @@ class ParentUserSerializer(serializers.ModelSerializer):
         }
 
 
+    
 
-
-
+class UserProfileImageSerializer(serializers.Serializer):
+    image = serializers.ImageField()
 
 class ParentRetrieveUpdateSerializer(serializers.ModelSerializer):
     children = StudentSerializer(read_only=True , many=True )
@@ -130,7 +136,7 @@ class UserInlineSerializer(serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField('get_updated_at')
     class Meta:
         model = User 
-        fields = ['identifier','first_name', 'last_name' , 'email' ,'is_active', 'is_staff','is_superuser', 'created_at', 'updated_at']
+        fields = ['identifier','first_name', 'last_name' , 'email' ,'image', 'is_active', 'is_staff','is_superuser', 'created_at', 'updated_at']
 
     def get_created_at(self,obj): 
         return obj.created_at.strftime("%m-%d-%Y")
@@ -231,10 +237,10 @@ class ChangePasswordSerializer(serializers.Serializer):
 SIGN UP SERIALIZER FOR PARENTS / GUARDIANS 
 """
 class ClientRegisterSerializer(serializers.Serializer):
-    first_name = serializers.CharField(allow_blank=False)
-    last_name = serializers.CharField(allow_blank=False)
-    phone_number = serializers.CharField(allow_blank=False)
-    gender = serializers.CharField(allow_blank=False)
+    first_name = serializers.CharField(allow_blank=True)
+    last_name = serializers.CharField(allow_blank=True)
+    phone_number = serializers.CharField(allow_blank=True)
+    gender = serializers.CharField(allow_blank=True)
 
 
 

@@ -1,10 +1,13 @@
 from django.shortcuts import render , redirect
 from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+
 from accounts.models import User ,  Student , ChannelUser
 from accounts.serializers import StudentSerializer , StudentFullDetailSerializer
 from accounts.utils import PremblyServices
 from accounts.mail_services import MailServices
 from accounts.permissions import IsAccountVerified
+
 from .models import  Channel  , StudentPickUpVerification , ChannelActivationCode 
 from .permissions import IsStudentParent , IsStudentParentOrChannelStaff , IsChannelAdmin
 from .paginations import CustomPagination
@@ -13,12 +16,14 @@ from .serializers import  (
      ChannelUserSerializer , ChannelUserFullDetailSerializer , ChannelActivationCodeConfirmSerializer ,
      ChannelUserUploadFileSerializer , MapStudentsToParentSerializer
 )
-from django.contrib.auth import get_user_model
+
 from rest_framework.permissions import AllowAny , IsAuthenticated
 from rest_framework import generics , status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
 from drf_yasg.utils import swagger_auto_schema
+
 import datetime
 from threading import Thread
 import string
@@ -29,9 +34,6 @@ import re
 # Create your views here.
 CustomUser = get_user_model()
 
-"""
-!!! TODO => renaming all the school variable to channel
-"""
 
 def index(request):
     redirect('')
@@ -176,6 +178,9 @@ class ChannelStudentListCreateApiView(generics.ListCreateAPIView):
         return student
   
     #  get the student of provided channel identifier\
+    @swagger_auto_schema(
+        operation_summary='Retrieve channel students list'
+    )
     def get(self, request , identifier ):
         try:
             Channel.objects.get(identifier=identifier)
@@ -190,6 +195,9 @@ class ChannelStudentListCreateApiView(generics.ListCreateAPIView):
         return  Response(serializer.data , status=status.HTTP_200_OK) 
 
 
+    @swagger_auto_schema(
+        operation_summary='Add new student to a channel'
+    )
     def post(self, request , identifier ):
         try:
             channel = Channel.objects.get(identifier=identifier)
@@ -209,10 +217,13 @@ class ChannelParentsListCreateAPIView(generics.ListCreateAPIView):
     pagination_class = CustomPagination 
 
     def get_queryset(self):
-        channel = ChannelUser.objects.filter(channel__identifier=self.kwargs.get('identifier'))
+        channel = ChannelUser.objects.filter(channel__identifier=self.kwargs.get('identifier'), is_parent=True)
         return channel
   
     #  get the parent of provided channel identifier
+    @swagger_auto_schema(
+        operation_summary='Retrieve a channel parents list'
+    )
     def get(self, request , identifier ):
         try:
             Channel.objects.get(identifier=identifier)
@@ -293,22 +304,11 @@ class ChannelVerifiedPickedStudentsAPIView(generics.ListAPIView):
         return StudentPickUpVerification.objects.filter(date=datetime.datetime.now().date() , student__channel__identifier=self.kwargs.get('identifier'))
 
 
-class ChannelUsersListAPIView(generics.ListAPIView):
-    queryset = ChannelUser.objects.all()
-    serializer_class = ChannelUserSerializer
-
-    def get(self, request , channel_identifier ): 
-        try:
-            channel = Channel.objects.get(identifier=channel_identifier)
-        except:
-            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
-        users = ChannelUser.objects.filter(channel=channel)
-        serializer = self.serializer_class(users , many=True)
-        return  Response(serializer.data , status=status.HTTP_200_OK) 
 
 
 
-class ChannelUserKidsListAPIView(generics.ListAPIView):
+
+class ChannelParentKidsListAPIView(generics.ListAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
@@ -317,15 +317,19 @@ class ChannelUserKidsListAPIView(generics.ListAPIView):
     using the channel identifier and the channel user identifier 
     """
 
+    @swagger_auto_schema(
+        operation_summary='Retrieve parent children in a channel',
+        operation_description='Get the list of the user kids in a specific channel\nusing the channel identifier and the channel user identifier '
+    )
     def get(self, request , channel_identifier , channel_user_identifier ): 
         try:
             channel = Channel.objects.get(identifier=channel_identifier)
         except:
-            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_404_NOT_FOUND)
         try:
             user = ChannelUser.objects.get(identifier=channel_user_identifier)
         except:
-            return Response({'success':False ,'message': 'Channel user does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success':False ,'message': 'Channel user does not exist'} , status=status.HTTP_404_NOT_FOUND)
         students = self.queryset.filter(channel=channel , parent=user)
         serializer = self.serializer_class(students , many=True) 
         return  Response(serializer.data , status=status.HTTP_200_OK) 
@@ -334,6 +338,9 @@ class ChannelUserKidsListAPIView(generics.ListAPIView):
 class ChannelUsersRetrieveUpdateDestroyAPIView(generics.GenericAPIView):
     serializer_class = ChannelUserFullDetailSerializer
 
+    @swagger_auto_schema(
+        operation_summary='Retrieve the list of users in a specific channel'
+    )
     def get(self, request , channel_identifier , channel_user_identifier ):
         try:
             channel = Channel.objects.get(identifier=channel_identifier)
@@ -354,6 +361,9 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_summary='Retrieve the list of a parent children'
+    )
     def get(self, request , channel_identifier ):
         user = User.objects.get(id=request.user.id)
         try:
@@ -365,12 +375,37 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
         return  Response(serializer.data , status=status.HTTP_200_OK) 
 
 
-class StudentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateAPIView) : 
+class StudentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView) : 
     # This view allow only the students parent or channel staff to view detail
     permission_classes = [IsAuthenticated , IsStudentParentOrChannelStaff ]
     serializer_class = StudentFullDetailSerializer
     queryset = Student.objects.all()
     lookup_field = 'identifier'
+
+
+    @swagger_auto_schema(
+        operation_summary='Retrieve student profile'
+    )
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary='Update student profile'
+    )
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary=''
+    )
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary='Delete student'
+    )
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 
 class StudentPickUpVerificationApiView(generics.RetrieveAPIView) :
@@ -379,7 +414,10 @@ class StudentPickUpVerificationApiView(generics.RetrieveAPIView) :
     serializer_class = StudentSerializer
     queryset = Student.objects.all()
     lookup_field = 'identifier'
-
+    
+    @swagger_auto_schema(
+        operation_summary='Verify student pick up'
+    )
     def get(self, request, *args, **kwargs):
         student = self.get_object()
         if StudentPickUpVerification.objects.filter(date=datetime.datetime.now().date() , student=student ).exists(): 
@@ -395,6 +433,9 @@ class StudentPickUpVerificationHistoryApiView(generics.GenericAPIView) :
     lookup_field = 'identifier'
     pagination_class = CustomPagination
 
+    @swagger_auto_schema(
+        operation_summary='Retrieve student pick up record'
+    )
     def get(self, request, identifier):
         query = StudentPickUpVerification.objects.filter(student__identifier=identifier)
         page = self.paginate_queryset(query)
@@ -411,6 +452,11 @@ class ChannelUserUploadCsvApiView(generics.CreateAPIView):
     serializer_class = ChannelUserUploadFileSerializer
     permission_classes = [IsAuthenticated, IsChannelAdmin]
 
+
+    @swagger_auto_schema(
+        operation_summary='Upload parent via csv file',
+        operation_description='The format should be first name , last name and email'
+    )
     def post(self, request, identifier , *args, **kwargs):
         try:
             channel = Channel.objects.get(identifier=identifier)
@@ -424,6 +470,7 @@ class ChannelUserUploadCsvApiView(generics.CreateAPIView):
             try:
                 first_name = row['Staff Sname']
                 last_name = row['Staff Oname']
+                # This is a dummy sample creating user mail with the first name and the index of user in row
                 email = f'{first_name}{str(_)}@gmail.com'
                 pattern = re.compile(r'\s+')
                 email = re.sub(pattern,'', email) 
@@ -445,6 +492,10 @@ class ChannelStudentUploadCsvApiView(generics.CreateAPIView):
     serializer_class = ChannelUserUploadFileSerializer
     permission_classes = [IsAuthenticated, IsChannelAdmin ]
 
+    @swagger_auto_schema(
+        operation_summary='Upload student via csv file',
+        operation_description='The format should be first name , last name'
+    )
     def post(self, request, identifier , *args, **kwargs):
         try:
             channel = Channel.objects.get(identifier=identifier)
@@ -456,12 +507,14 @@ class ChannelStudentUploadCsvApiView(generics.CreateAPIView):
         reader = pd.read_csv(file)
         for _ , row in reader.iterrows():
             try:
-                first_name = row['Staff Sname'] 
+                # first_name = row[3] 
+                first_name = row['Staff Sname']  
+                # last_name = row[1]
                 last_name = row['Staff Oname']
+                print(first_name , last_name )
             except:
                 return Response({'success':False, 'detail':'Invalid csv format'}, status=status.HTTP_400_BAD_REQUEST)
             new_user = Student.objects.create(first_name=first_name ,last_name=last_name ,channel=channel )
             new_user.save()
-        
         return Response({'success': True ,'detail':'Student uploaded successfully' }, status=status.HTTP_201_CREATED)
     

@@ -4,23 +4,27 @@ from threading import Thread
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import (DjangoUnicodeDecodeError, force_bytes,
-                                   force_str, smart_str)
+from django.utils.encoding import DjangoUnicodeDecodeError, force_bytes,   force_str, smart_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+
 from rest_framework import generics, status
 from rest_framework.decorators import permission_classes
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
+
 from drf_yasg.utils import swagger_auto_schema
+
 from .mail_services import MailServices
 from .models import AccountActivation, AccountActivationCode, Student, User
-from .serializers import (ChangePasswordSerializer, ClientRegisterSerializer,
-                          LoginSerializer, ResetPasswordRequestEmailSerializer,
-                          SetNewPasswordSerializer,
-                          UserAccountActivationCodeConfirmSerializer,
-                          UserEmailPremblyConfirmSerializer, UserSerializer)
+from .serializers import (
+    ChangePasswordSerializer, ClientRegisterSerializer, 
+    LoginSerializer, ResetPasswordRequestEmailSerializer,
+    SetNewPasswordSerializer, UserProfileImageSerializer, 
+    UserAccountActivationCodeConfirmSerializer,
+    UserEmailPremblyConfirmSerializer, UserSerializer)
 from .tokens import create_jwt_pair_for_user
 from .utils import PremblyServices
 
@@ -140,7 +144,6 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
             return Response({'success': False , 'detail':'Email already exist'}, status=status.HTTP_400_BAD_REQUEST)
         # At this point we can now call the prembly APi to verify the email
         verify = True
-        # verify = PremblyServices.user_signup_verification_mail(email=email)
         if verify :
             code = ''.join(random.choice(string.digits) for _ in range(4))
             AccountActivationCode.objects.create(email=email, code=int(code))
@@ -205,22 +208,47 @@ class UserProfileUpdateApiView(generics.GenericAPIView):
         data = request.data
         serializer = self.serializer_class(data=data)
         if serializer.is_valid(raise_exception=True) :
-            first_name = serializer.validated_data['first_name']
-            last_name = serializer.validated_data['last_name']
-            phone_number = serializer.validated_data['phone_number']
-            gender = serializer.validated_data['gender']
+            first_name = serializer.validated_data.get('first_name',None)
+            last_name = serializer.validated_data.get('last_name', None)
+            phone_number = serializer.validated_data('phone_number', None)    
+            gender = serializer.validated_data.get('gender', None)
             try:
                 user = User.objects.get(id=request.user.id)
             except:
-                return Response({'success':False ,'detail': 'Email already exists'} , status=status.HTTP_400_BAD_REQUEST)
-            user.first_name = first_name
-            user.last_name = last_name
-            user.phone_number = phone_number
-            user.gender = gender
+                return Response({'success':False ,'detail': 'User does not exits'} , status=status.HTTP_404_NOT_FOUND)
+            if first_name != None:
+                user.first_name = first_name
+            if last_name is not None :
+                user.last_name = last_name
+            if phone_number is not None:
+                user.phone_number = phone_number
+            if gender is not None :
+                user.gender = gender
             user.is_active = True
             user.save()
             serializer = UserSerializer(user)
             return Response({'success':True , 'detail': 'Profile successfully updated', 'user': serializer.data},status.HTTP_200_OK)
+
+
+class UserProfileImageUploadApiView(generics.GenericAPIView):
+        serializer_class = UserProfileImageSerializer
+        queryset = User.objects.all()
+        parser_classes =[ MultiPartParser]
+        permission_classes = [ IsAuthenticated ]
+        
+
+        @swagger_auto_schema(
+            operation_description='Upload user profile image',
+            operation_summary='User profile image upload endpoint'
+        )
+        def post(self, request ):
+            data = request.data
+            serializer = self.serializer_class(data=data)
+            serializer.is_valid(raise_exception=True)
+            user = User.objects.get(id=request.user.id)
+            user.image = serializer.validated_data['image']
+            user.save() 
+            return Response(status=status.HTTP_200_OK)
 
 
 
