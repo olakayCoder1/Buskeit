@@ -43,7 +43,18 @@ class ChannelsListCreateApiView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Channel.objects.all()
     serializer_class = ChannelsSerializer  
- 
+    
+    @swagger_auto_schema(
+        operation_description='Get a list of all the available channels',
+        operation_summary='Get a list of all the available channels'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description='Create new channel the required fields are :\nName\nRc_number\nPhone number and \nAddress',
+        operation_summary='Create new workspace'
+    )
     def post(self, request, *args, **kwargs):
         if request.user.is_verified == False:
             return Response({'detail': 'You do not have permission to perform this action'}, status=status.HTTP_401_UNAUTHORIZED )
@@ -55,7 +66,6 @@ class ChannelsListCreateApiView(generics.ListCreateAPIView):
         rc_number = serializer.validated_data['rc_number']  
         phone_number = serializer.validated_data['phone_number']
         address = serializer.validated_data['address']
-        print(rc_number)
         verify_channel = PremblyServices.channel_creation_verification(rc_number)
         if verify_channel == None :
             return Response({'success':False , 'detail':'Workspace cannot be created at this moment, try again later.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -85,6 +95,10 @@ class ChannelActivationCodeConfirmApiView(generics.GenericAPIView):
     serializer_class = ChannelActivationCodeConfirmSerializer
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description='Activate channel with the verification code sent to the school mail',
+        operation_summary='Activate a channel'
+    )
     def post(self, request) :
         data = request.data
         user = User.objects.get(id=request.user.id)
@@ -105,12 +119,32 @@ class ChannelActivationCodeConfirmApiView(generics.GenericAPIView):
 class ChannelsRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView): 
     queryset = Channel.objects.all()
     serializer_class =ChannelsSerializer
+    permission_classes = [IsAuthenticated ]
     lookup_field = 'identifier'
+
+    @swagger_auto_schema(
+        operation_description='Retrieve a channel with the provided channel identifier',
+        operation_summary='Retrieve a channel'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description='Delete a channel with the provided channel identifier',
+        operation_summary='Delete a channel'
+
+    )
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
 
 class ChannelUserJoinApiView(generics.GenericAPIView):
     serializer_class = ChannelJoinSerializer
     permission_classes =[ IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description='Join a channel using the channel invitation code',
+        operation_summary='Join a channel with the channel invitation code'
+    )
     def post(self, request):            
         try: 
             user = User.objects.get(id=request.user.id)
@@ -122,7 +156,7 @@ class ChannelUserJoinApiView(generics.GenericAPIView):
             try: 
                 channel = Channel.objects.get(invitation_code=serializer.validated_data['invitation_code'])
             except:
-                return Response({'success':False ,'detail': 'Channel invitation code is invalid'} , status=status.HTTP_400_BAD_REQUEST)
+                return Response({'success':False ,'detail': 'Channel invitation code is not valid'} , status=status.HTTP_400_BAD_REQUEST)
             
             channel_user_exist = ChannelUser.objects.filter(email=request.user.email, channel=channel)
             if channel_user_exist.exists():

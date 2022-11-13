@@ -28,6 +28,10 @@ from .utils import PremblyServices
 class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
     serializer_class = ResetPasswordRequestEmailSerializer
  
+    @swagger_auto_schema(
+        operation_description='Request a password reset',
+        operation_summary='Request password reset'
+    )
     def post(self, request):
         email = request.data['email']
         serializer = self.serializer_class(data=request.data)
@@ -57,6 +61,11 @@ class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
 # This view handle changing of user password on forget password
 class SetNewPasswordTokenCheckApi(generics.GenericAPIView):
     serializer_class = SetNewPasswordSerializer
+
+    @swagger_auto_schema(
+        operation_description='Reset password confirm',
+        operation_summary='Reset password confirm'
+    )
     def post(self, request, token , uuidb64 ):
         try:
             id = smart_str(urlsafe_base64_decode(uuidb64))
@@ -78,7 +87,7 @@ class SetNewPasswordTokenCheckApi(generics.GenericAPIView):
 
 
 #  This view handle password update within app ( authenticated user)
-class ChangePasswordView(generics.UpdateAPIView):
+class ChangePasswordView(generics.GenericAPIView):
     serializer_class = ChangePasswordSerializer
     permission_classes = [ IsAuthenticated ] 
     model = User
@@ -86,8 +95,12 @@ class ChangePasswordView(generics.UpdateAPIView):
     def get_object(self,queryset=None):
         obj = self.request.user
         return obj
-        
-    def update(self, request, *args, **kwargs):
+    
+    @swagger_auto_schema(
+        operation_description='Change password',
+        operation_summary='Change password'
+    )
+    def post(self, request, *args, **kwargs):
         self.object=self.get_object()
         serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -148,6 +161,11 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
 
 class UserAccountActivationCodeConfirmApiView(generics.GenericAPIView):
     serializer_class = UserAccountActivationCodeConfirmSerializer
+
+    @swagger_auto_schema(
+        operation_description='Activate user account with the activation code',
+        operation_summary='Activate user account'
+    )
     def post(self, request) :
         data = request.data
         serializer = self.serializer_class(data=data)
@@ -180,6 +198,9 @@ class UserProfileUpdateApiView(generics.GenericAPIView):
     serializer_class = ClientRegisterSerializer
     permission_classes = [ IsAuthenticated ]
 
+    @swagger_auto_schema(
+        operation_summary='Complete user profile'
+    )
     def post(self, request:Response ):
         data = request.data
         serializer = self.serializer_class(data=data)
@@ -237,6 +258,9 @@ class ParentRegisterApiView(generics.GenericAPIView):
 class LoginApiView(generics.GenericAPIView):
     serializer_class = LoginSerializer
 
+    @swagger_auto_schema(
+        operation_summary='Authenticate user'
+    )
     def post(self, request ):
         data = request.data
         serializer = self.serializer_class(data=data)
