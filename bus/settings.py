@@ -167,8 +167,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 PREMBLY_APP_ID = env('PREMBLY_APP_ID')  
 PREMBLY_X_API_KEY = env('PREMBLY_X_API_KEY')
-# PREMBLY_BASE_URL = 'https://sandbox.myidentitypass.com'
-PREMBLY_BASE_URL = 'https://api.myidentitypass.com'
+PREMBLY_BASE_URL = 'https://sandbox.myidentitypass.com'
+# PREMBLY_BASE_URL = 'https://api.myidentitypass.com'
 #  https://api.myidentitypass.com
 
 PAYSTACK_SECRET_KEY = env('PAYSTACK_SECRET_KEY')

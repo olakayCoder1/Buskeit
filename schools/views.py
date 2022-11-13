@@ -52,34 +52,34 @@ class ChannelsListCreateApiView(generics.ListCreateAPIView):
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True) 
         name = serializer.validated_data['name']
-        rc_number = serializer.validated_data['rc_number']
-        company_type = serializer.validated_data['company_type']
-        email = serializer.validated_data['email'] 
+        rc_number = serializer.validated_data['rc_number']  
         phone_number = serializer.validated_data['phone_number']
         address = serializer.validated_data['address']
-        # verify_channel = PremblyServices.channel_creation_verification(serializer.validated_data['rc_number'])
-        # if verify_channel == None :
-        #     return Response({'success':False , 'detail':'RC_NUMBER is not valid'}, status=status.HTTP_400_BAD_REQUEST)
-        # if verify_channel['data']['company_name'] != serializer.validated_data['name']:
-        #     return Response({'success': False , 'detail': 'Company name is not correct'}, status=status.HTTP_400_BAD_REQUEST)
+        print(rc_number)
+        verify_channel = PremblyServices.channel_creation_verification(rc_number)
+        if verify_channel == None :
+            return Response({'success':False , 'detail':'Workspace cannot be created at this moment, try again later.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if verify_channel['verification']['status'] == 'NOT-VERIFIED' :
+            return Response({'success': False , 'detail': 'Workspace cannot be created, because RC_NUMBER is not valid'} , status=status.HTTP_400_BAD_REQUEST )
 
-        # if verify_channel['data']['email_address'] != serializer.validated_data['email']:
-        #     return Response({'success': False , 'detail': 'Company name is not correct'}, status=status.HTTP_400_BAD_REQUEST)
-
-        channel = Channel.objects.create(name=name, address=address ,email=email ,  rc_number=rc_number , phone_number=phone_number , company_type=company_type)
-        code = ''.join(random.choice(string.digits) for _ in range(4))
-        ChannelActivationCode.objects.create(email=email, code=int(code), user=user)
-        Thread(target=MailServices.channel_creation_verification_email , kwargs={
-                        'email': email , 'code' : code
-        }).start()
-        admin = ChannelUser.objects.create(user=user, first_name=user.first_name, last_name=user.last_name, email=user.email , is_admin=True, is_staff=True , channel=channel)
-        return Response( {  
+        if verify_channel['verification']['status'] == 'PENDING' :
+            return Response({'success': False , 'detail': 'Workspace cannot be created'} , status=status.HTTP_400_BAD_REQUEST )
+        
+        if verify_channel['data']['email_address'] :
+            channel = Channel.objects.create(name=name, address=address , email = verify_channel['data']['email_address'],  rc_number=rc_number , phone_number=phone_number )
+            code = ''.join(random.choice(string.digits) for _ in range(4))
+            ChannelActivationCode.objects.create(email=verify_channel['data']['email_address'], code=int(code), user=user)
+            Thread(target=MailServices.channel_creation_verification_email , kwargs={
+                        'email': verify_channel['data']['email_address'] , 'code' : code
+            }).start()
+            admin = ChannelUser.objects.create(user=user, first_name=user.first_name, last_name=user.last_name, email=user.email , is_admin=True, is_staff=True , channel=channel)
+            return Response( {  
                 'success': True , 
-                'detail' :'Channel activation code as been sent to the email',
-                'email': email
+                'detail' :'Workspace activation code as been sent to the school mail',
+                'email': verify_channel['data']['email_address']
                 }, status=status.HTTP_200_OK  )
-        # serializer = self.serializer_class(channel)
-        # return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'success': False , 'detail': 'Workspace cannot be created'} , status=status.HTTP_400_BAD_REQUEST )
 
 class ChannelActivationCodeConfirmApiView(generics.GenericAPIView):
     serializer_class = ChannelActivationCodeConfirmSerializer

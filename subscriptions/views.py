@@ -9,20 +9,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics , status
 from accounts.models import ChannelUser 
+from accounts.utils import PremblyServices
 # Create your views here.
 
 def index(request):
-    user = ChannelUser.objects.get(id=30)
-    print(user.__class__) 
-    m  = user.__class__.objects.all()
-    for k in m:
-        print(k.first_name) 
-
-    if request.method == 'POST':
-        print('Yes')
-        email = request.POST.get('email')
-        amount = int(request.POST.get('amount'))
-        # return render(request, 'subscriptions/confirm.html')
+    PremblyServices.channel_creation_verification('092932')
+    PremblyServices.user_signup_verification_mail('programmerolakay@gmail.com')
     return render(request , 'subscriptions/payment.html')
 
 

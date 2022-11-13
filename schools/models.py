@@ -9,9 +9,9 @@ def upload_to(instance, filename):
 class Channel(models.Model):
     identifier = models.CharField(max_length=15, null=True , blank=True ,  unique=True)
     name = models.CharField(max_length=1000 )
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20)
-    rc_number = models.PositiveIntegerField(null=True , blank=True )
+    email = models.EmailField(null=True , blank=True)
+    phone_number = models.CharField(max_length=20 , null=True , blank=True)
+    rc_number = models.CharField(max_length=1000, null=True , blank=True )
     company_type = models.CharField(max_length=10 , null=True , blank=True )
     address = models.TextField(null=True, blank=True)
     invitation_code = models.CharField(max_length=11, unique=True ,  blank=True ,  null=True )

@@ -20,6 +20,8 @@ class ChannelsSerializer(serializers.ModelSerializer):
             'identifier':{'read_only' : True},
             'is_active':{'read_only' : True},
             'is_verified':{'read_only' : True}, 
+            'email':{'read_only' : True}, 
+            'company_type':{'read_only' : True}, 
             'invitation_code':{'read_only' : True}, 
             'created_at':{'read_only' : True}, 
             'updated_at':{'read_only' : True}, 
