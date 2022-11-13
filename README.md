@@ -4,17 +4,6 @@ book when their wards are picked up from the house. Buskeit intends to take out 
 this book and digitize it. With buskeit, parents can acknowledge when their children have been picked up/ dropped off also.
 Schools can also leverage this app for proper student administration/planning and better bus fleet tracking/management. 
 
-## ENPOINTS
-| METHOD | ROUTE | FUNCTIONALITY |ACCESS|
-| ------- | ----- | ------------- | ------------- |
-| *POST* | ```/api/v1/register/parents``` | _Register new user as parent_| _All users_|
-| *POST* | ```/api/v1/register/schooladmin``` | _Register new user as school admin_| _All users_|
-| *POST* | ```/api/v1/password/forget``` | _Request password reset_|_All users_|
-| *POST* | ```/api/v1/password/<token>/<uuidb64>/reset``` | _Reset password confirm_|_All users_|
-| *POST* | ```/api/v1/password/reset``` | _Change user password_|_Authenticated user_|
-| *GET* | ```/api/v1/schools/<identifier>/join``` | _User join a school_|_Authenticated user_|
-
-
 
 ## CONTRIBUTORS
 | SN | USER | ROLE |PROFILE|
