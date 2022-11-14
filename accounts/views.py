@@ -210,7 +210,7 @@ class UserProfileUpdateApiView(generics.GenericAPIView):
         if serializer.is_valid(raise_exception=True) :
             first_name = serializer.validated_data.get('first_name',None)
             last_name = serializer.validated_data.get('last_name', None)
-            phone_number = serializer.validated_data('phone_number', None)    
+            phone_number = serializer.validated_data.get('phone_number', None)     
             gender = serializer.validated_data.get('gender', None)
             try:
                 user = User.objects.get(id=request.user.id)
@@ -223,7 +223,7 @@ class UserProfileUpdateApiView(generics.GenericAPIView):
             if phone_number is not None:
                 user.phone_number = phone_number
             if gender is not None :
-                user.gender = gender
+                user.gender = gender.lower()
             user.is_active = True
             user.save()
             serializer = UserSerializer(user)
