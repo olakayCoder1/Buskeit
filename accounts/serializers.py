@@ -2,7 +2,7 @@ from .models import User , Student , ChannelUser
 from rest_framework import serializers
 from schools.models import Channel
 # from schools.serializers import *
-
+from django.conf import settings
 
 
 
@@ -92,9 +92,10 @@ class UserSerializer(serializers.ModelSerializer):
         serializer = ChannelUserSerializer(channel, many=True)
         return serializer.data
 
-
     def get_image(self, obj):
-        return obj.image.url  
+        if settings.DEBUG :
+            return f'http://127.0.0.1:8000{obj.image.url }'
+        return f'http://buskeit.herokuapp.com{obj.image.url }'  
 
 
 
