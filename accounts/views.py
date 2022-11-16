@@ -199,7 +199,7 @@ class UserProfileUpdateApiView(generics.GenericAPIView):
     This view is used in the registration of a new user
     """
     serializer_class = ClientRegisterSerializer
-    permission_classes = [ IsAuthenticated ]
+    permission_classes = [ IsAuthenticated ] 
 
     @swagger_auto_schema(
         operation_summary='Complete user profile'
@@ -234,7 +234,7 @@ class UserProfileImageUploadApiView(generics.GenericAPIView):
         serializer_class = UserProfileImageSerializer
         queryset = User.objects.all()
         parser_classes =[ MultiPartParser]
-        permission_classes = [ IsAuthenticated ]
+        # permission_classes = [ IsAuthenticated ] 
         
 
         @swagger_auto_schema(
