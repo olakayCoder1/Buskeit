@@ -293,7 +293,12 @@ class ChannelParentRetrieveUpdateDestroy(generics.GenericAPIView):
 
     )
     def delete(self, request,identifier , *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
+        try:
+            parent = ChannelUser.objects.get(identifier=identifier)
+        except ChannelUser.DoesNotExist:
+            return Response({'success':False , 'detail':'Record no found'}, status=status.HTTP_400_BAD_REQUEST)
+        parent.delete() 
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     
     @swagger_auto_schema( 
