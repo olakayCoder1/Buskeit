@@ -267,6 +267,54 @@ class ChannelParentsListCreateAPIView(generics.ListCreateAPIView):
             return Response(self.serializer_class(new_user).data , status=status.HTTP_201_CREATED)
 
 
+
+class ChannelParentRetrieveUpdateDestroy(generics.GenericAPIView):
+    serializer_class = ChannelUserSerializer
+    queryset = ChannelUser.objects.all()
+    lookup_field = 'identifier'
+
+    @swagger_auto_schema( 
+        operation_description='Retrieve a channel user ( parent ) using the parent identifier.',
+        operation_summary='Retrieve a parent in a channel',
+
+    ) 
+    def get(self, request,identifier ,  *args, **kwargs):  
+        try:
+            parent = ChannelUser.objects.get(identifier=identifier)
+        except ChannelUser.DoesNotExist:
+            return Response({'success':False , 'detail':'Record no found'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ChannelUserSerializer(parent)
+        return Response(serializer.data , status=status.HTTP_200_OK)
+
+
+    @swagger_auto_schema( 
+        operation_description='Delete  a channel user ( parent ) using the parent identifier.',
+        operation_summary='Deelete a parent in a channel',
+
+    )
+    def delete(self, request,identifier , *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+    
+    @swagger_auto_schema( 
+        operation_description='Update  a channel user ( parent ) using the parent identifier.',
+        operation_summary='Update a parent in a channel',
+
+    )
+    def put(self, request,identifier,  *args, **kwargs):
+        try:
+            parent = ChannelUser.objects.get(identifier=identifier)
+        except ChannelUser.DoesNotExist:
+            return Response({'success':False , 'detail':'Record no found'}, status=status.HTTP_400_BAD_REQUEST)
+        data = request.data
+        serializer = ChannelUserSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        parent.first_name = serializer.validated_data.get('first_name')  
+        parent.last_name = serializer.validated_data.get('last_name')
+        parent.save()
+        return Response(ChannelUserSerializer(parent).data , status=status.HTTP_200_OK)
+
+
 class MapStudentsToParentApiView(generics.GenericAPIView):
     serializer_class  = MapStudentsToParentSerializer
     permission_classes = [IsAuthenticated]
@@ -338,11 +386,11 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
         try:
             channel = Channel.objects.get(identifier=channel_identifier)
         except:
-            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_404_NOT_FOUND)
+            return Response({'success':False ,'detail': 'School does not exist'} , status=status.HTTP_404_NOT_FOUND)
         try:
             user = ChannelUser.objects.get(identifier=channel_user_identifier)
         except:
-            return Response({'success':False ,'message': 'Channel user does not exist'} , status=status.HTTP_404_NOT_FOUND)
+            return Response({'success':False ,'detail': 'Channel user does not exist'} , status=status.HTTP_404_NOT_FOUND)
         students = self.queryset.filter(channel=channel , parent=user)
         serializer = self.serializer_class(students , many=True) 
         return  Response(serializer.data , status=status.HTTP_200_OK) 
@@ -358,14 +406,14 @@ class ChannelUsersRetrieveUpdateDestroyAPIView(generics.GenericAPIView):
         try:
             channel = Channel.objects.get(identifier=channel_identifier)
         except:
-            return Response({'success':False ,'message': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success':False ,'detail': 'School does not exist'} , status=status.HTTP_400_BAD_REQUEST)
         user_query = ChannelUser.objects.filter(channel=channel, identifier=channel_user_identifier)
         if user_query.exists():
             user = user_query.first()
             serializer = self.serializer_class(user)
             return Response(serializer.data ,  status=status.HTTP_200_OK)
         # serializer = self.serializer_class(users , many=True)
-        return  Response({'success':False ,'message': 'User not in  does not exist in channels'} , status=status.HTTP_400_BAD_REQUEST) 
+        return  Response({'success':False ,'detail': 'User not in  does not exist in channels'} , status=status.HTTP_400_BAD_REQUEST) 
 
 
 class ChannelParentKidsListAPIView(generics.ListAPIView):
@@ -382,7 +430,7 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
         try:
             channel = Channel.objects.get(identifier=channel_identifier)
         except:
-            return Response({'success':False ,'message': 'Channel does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_400_BAD_REQUEST)
         students = self.queryset.filter(channel=channel , parent__user__id=user.id)
         serializer = self.serializer_class( students , many=True)
         return  Response(serializer.data , status=status.HTTP_200_OK) 
@@ -390,7 +438,7 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
 
 class StudentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView) : 
     # This view allow only the students parent or channel staff to view detail
-    permission_classes = [IsAuthenticated , IsStudentParentOrChannelStaff ]
+    permission_classes = [IsAuthenticated ]  
     serializer_class = StudentFullDetailSerializer
     queryset = Student.objects.all()
     lookup_field = 'identifier'
@@ -434,9 +482,9 @@ class StudentPickUpVerificationApiView(generics.RetrieveAPIView) :
     def get(self, request, *args, **kwargs):
         student = self.get_object()
         if StudentPickUpVerification.objects.filter(date=datetime.datetime.now().date() , student=student ).exists(): 
-            return Response({'success': True ,'message': 'Student already verify'} ,status=status.HTTP_200_OK) 
+            return Response({'success': True ,'detail': 'Student already verify'} ,status=status.HTTP_200_OK) 
         StudentPickUpVerification.objects.create(student=student)
-        return Response({'success': True ,'message': 'Successful verification'} , status=status.HTTP_200_OK) 
+        return Response({'success': True ,'detail': 'Successful verification'} , status=status.HTTP_200_OK) 
 
 
 class StudentPickUpVerificationHistoryApiView(generics.GenericAPIView) :
@@ -481,15 +529,19 @@ class ChannelUserUploadCsvApiView(generics.CreateAPIView):
         reader = pd.read_csv(file)
         for _ , row in reader.iterrows():
             try:
-                first_name = row['Staff Sname']
-                last_name = row['Staff Oname']
+                # first_name = row['Staff Sname']   
+                # last_name = row['Staff Oname']
+                first_name = row['FIRST_NAME']  
+                # last_name = row[1]
+                last_name = row['LAST_NAME']
+                email = row['EMAIL']  
                 # This is a dummy sample creating user mail with the first name and the index of user in row
-                email = f'{first_name}{str(_)}@gmail.com'
-                pattern = re.compile(r'\s+')
-                email = re.sub(pattern,'', email) 
+                # email = f'{first_name}{str(_)}@gmail.com'
+                # pattern = re.compile(r'\s+')
+                # email = re.sub(pattern,'', email) 
             except:
                 return Response({'success':False, 'detail':'Invalid csv format'}, status=status.HTTP_400_BAD_REQUEST)
-            user_exist = ChannelUser.objects.filter(email=email,channel=channel)
+            user_exist = ChannelUser.objects.filter(email=email,channel=channel).first()
             if user_exist:
                 user_exist.is_parent = True
                 user_exist.save()
@@ -521,13 +573,17 @@ class ChannelStudentUploadCsvApiView(generics.CreateAPIView):
         for _ , row in reader.iterrows():
             try:
                 # first_name = row[3] 
-                first_name = row['Staff Sname']  
+                first_name = row['FIRST_NAME']  
                 # last_name = row[1]
-                last_name = row['Staff Oname']
+                last_name = row['LAST_NAME']
+                middle_name = row['MIDDLE_NAME']   
                 print(first_name , last_name )
             except:
                 return Response({'success':False, 'detail':'Invalid csv format'}, status=status.HTTP_400_BAD_REQUEST)
-            new_user = Student.objects.create(first_name=first_name ,last_name=last_name ,channel=channel )
-            new_user.save()
+            try:
+                new_user = Student.objects.create(first_name=first_name ,last_name=last_name, middle_name=middle_name ,channel=channel )
+                new_user.save()
+            except :
+                pass
         return Response({'success': True ,'detail':'Student uploaded successfully' }, status=status.HTTP_201_CREATED)
     

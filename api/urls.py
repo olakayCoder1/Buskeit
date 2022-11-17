@@ -28,6 +28,7 @@ urlpatterns = [
     path('channels/<str:identifier>/students/verify', views.ChannelVerifiedPickedStudentsAPIView.as_view(), name='list-channel-students-verify'),
     path('channels/<str:identifier>/students/upload', views.ChannelStudentUploadCsvApiView.as_view(), name='channel-students-upload'),
     path('channels/<str:identifier>/parents', views.ChannelParentsListCreateAPIView.as_view(), name='list-create-channel-parents'),
+    path('channels/parents/<str:identifier>', views.ChannelParentRetrieveUpdateDestroy.as_view(), name='retrieve-update-destroy-channel-parent'),
     path('channels/<str:channel_identifier>/parents/<str:channel_user_identifier>/students', views.ChannelParentKidsListAPIView.as_view(), name='retrieve-parent-children-in-channel'),
     path('channels/<str:identifier>/parents/upload', views.ChannelUserUploadCsvApiView.as_view(), name='channel-users-upload'),
 

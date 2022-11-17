@@ -40,9 +40,10 @@ class ChannelActivationCodeConfirmSerializer(serializers.Serializer):
 class ChannelUserSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField('get_created_at') 
     updated_at = serializers.SerializerMethodField('get_updated_at') 
+    students = serializers.SerializerMethodField('get_students') 
     class Meta:  
         model = ChannelUser
-        fields = ['identifier','first_name', 'last_name','email' , 'channel','is_parent','is_admin', 'is_staff' , 'created_at' , 'updated_at' ]
+        fields = ['identifier','first_name', 'last_name','email' , 'channel','is_parent','is_admin', 'is_staff' , 'created_at' , 'updated_at', 'students' ]
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
@@ -59,7 +60,12 @@ class ChannelUserSerializer(serializers.ModelSerializer):
         return obj.created_at.strftime("%m-%d-%Y")
 
     def get_updated_at(self,obj): 
-        return obj.updated_at.strftime("%m-%d-%Y")
+        return obj.updated_at.strftime("%m-%d-%Y")  
+   
+
+    def get_students(self, obj):
+        kids = Student.objects.filter(parent__identifier=obj.identifier , channel__identifier=obj.channel.identifier)
+        return StudentSerializer(kids , many=True).data
 
     
     

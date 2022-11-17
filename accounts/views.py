@@ -49,16 +49,16 @@ class ResetPasswordRequestEmailApiView(generics.GenericAPIView):
                 }).start()
                 # send_mail  = await forget_password_mail(user.email,token ,uuidb64)
                 return Response( 
-                        {'success':True , 'message': 'Password reset instruction will be sent to the mail' },
+                        {'success':True , 'detail': 'Password reset instruction will be sent to the mail' },
                         status=status.HTTP_200_OK
                         )
             except:
                 return Response( 
-                    {'success':True , 'message': 'Password reset mail sent' }, 
+                    {'success':True , 'detail': 'Password reset mail sent' }, 
                     status=status.HTTP_200_OK
                     )
         return Response( 
-                    {'success':False , 'message': 'Enter a valid email address' }, 
+                    {'success':False , 'detail': 'Enter a valid email address' }, 
                     status=status.HTTP_400_BAD_REQUEST
                     )
 
@@ -77,17 +77,17 @@ class SetNewPasswordTokenCheckApi(generics.GenericAPIView):
             password1 = request.data['password1']
             password2 = request.data['password2']
             if password1 != password2 :
-                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
+                return  Response({'success':False ,'detail': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
             if PasswordResetTokenGenerator().check_token(user, token):
                 data = request.data
                 serializer = self.serializer_class(data=data)
                 serializer.is_valid(raise_exception=True)
                 user.set_password(serializer.validated_data['password1'])
                 user.save() 
-                return Response({'success':True , 'message':'Password updated successfully'}, status=status.HTTP_200_OK)
-            return Response({'success':False ,'message':'Token is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'success':True , 'detail':'Password updated successfully'}, status=status.HTTP_200_OK)
+            return Response({'success':False ,'detail':'Token is not valid'}, status=status.HTTP_400_BAD_REQUEST)
         except DjangoUnicodeDecodeError as identifier:
-            return Response({'success':False ,'message': 'Token is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success':False ,'detail': 'Token is not valid'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 #  This view handle password update within app ( authenticated user)
@@ -139,7 +139,7 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
         password1 = serializer.validated_data['password1']
         password2 = serializer.validated_data['password2']
         if password1 != password2 :
-                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
+                return  Response({'success':False ,'detail': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(email=email).exists():
             return Response({'success': False , 'detail':'Email already exist'}, status=status.HTTP_400_BAD_REQUEST)
         # At this point we can now call the prembly APi to verify the email
@@ -266,10 +266,10 @@ class ParentRegisterApiView(generics.GenericAPIView):
             password2 = serializer.validated_data['password2']
             first_name = serializer.validated_data['first_name']
             if password1 != password2 :
-                return  Response({'success':False ,'message': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
+                return  Response({'success':False ,'detail': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
             try:
                 user = User.objects.get(email=email)
-                return Response({'success':False ,'message': 'Email already exists'} , status=status.HTTP_400_BAD_REQUEST)
+                return Response({'success':False ,'detail': 'Email already exists'} , status=status.HTTP_400_BAD_REQUEST)
             except:
                 user = User.objects.create(first_name=first_name,last_name=last_name,email=email, is_parent=True)
                 user.set_password(password2)
@@ -280,7 +280,7 @@ class ParentRegisterApiView(generics.GenericAPIView):
                         'email': user.email ,'token': token , 'uuidb64':uuidb64
                     }).start()
                 AccountActivation.objects.create(active_token=token , email=user.email)
-            return Response({'success':True , 'message': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
+            return Response({'success':True , 'detail': 'Verification mail as been sent to the email address'},status.HTTP_200_OK)
 
 
 class LoginApiView(generics.GenericAPIView):
@@ -301,13 +301,13 @@ class LoginApiView(generics.GenericAPIView):
                 tokens = create_jwt_pair_for_user(user)
                 response = {
                     'success': True ,
-                    'message': 'Login is successful',
+                    'detail': 'Login is successful',
                     "tokens" : tokens , 
                     'user' : serializer.data 
                 }
                 return Response(response , status=status.HTTP_200_OK)
             
-            return Response({'success': False , 'message': 'Invalid login credential'}, status=status.HTTP_200_OK)
+            return Response({'success': False , 'detail': 'Invalid login credential'}, status=status.HTTP_200_OK)
 
 
 
@@ -329,7 +329,7 @@ class AccountEmailVerificationConfirmApiView(APIView):
             response.update(user_token)
             return Response(response , status=status.HTTP_201_CREATED) 
           
-        return Response({'success':False , 'message': 'Mail verification is invalid'},status.HTTP_200_OK)
+        return Response({'success':False , 'detail': 'Mail verification is invalid'},status.HTTP_200_OK)
 
 
 
