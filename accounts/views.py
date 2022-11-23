@@ -141,6 +141,20 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
         if password1 != password2 :
                 return  Response({'success':False ,'detail': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(email=email).exists():
+            """
+                check if the user as already register but have not verify his or her account yet
+            """
+            attempted_user = User.objects.filter(email=email , is_verified=False)
+            if attempted_user.exists():
+                user = attempted_user.first()
+                user.set_password(password2)
+                user.is_active = False
+                user.save()
+                return Response( { 
+                    'success': True , 
+                    'detail' :'Account activation code as been sent to your email',
+                    'email': user.email
+                    }, status=status.HTTP_201_CREATED  )
             return Response({'success': False , 'detail':'Email already exist'}, status=status.HTTP_400_BAD_REQUEST)
         # At this point we can now call the prembly APi to verify the email
         verify = True
@@ -158,7 +172,7 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
                 'success': True , 
                 'detail' :'Account activation code as been sent to your email',
                 'email': user.email
-                }, status=status.HTTP_200_OK  )
+                }, status=status.HTTP_201_CREATED  )
         return Response({'success':False , 'detail':'Invalid email address'}, status=status.HTTP_400_BAD_REQUEST)
         
 
@@ -297,6 +311,14 @@ class LoginApiView(generics.GenericAPIView):
             password = serializer.validated_data['password']
             user = authenticate(email=email , password=password)
             if user is not None :
+                if user.is_verified == False :
+                    return Response(
+                        {
+                            'success':False, 
+                            'detail':'You have not verify your account, kindly register again'
+                        },
+                            status=status.HTTP_401_UNAUTHORIZED
+                        )
                 serializer = UserSerializer(user)
                 tokens = create_jwt_pair_for_user(user)
                 response = {

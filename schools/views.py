@@ -88,7 +88,10 @@ class ChannelsListCreateApiView(generics.ListCreateAPIView):
             """
             ran_num = ''.join(random.choice(string.digits) for _ in range(6))
             email = f'test{ran_num}@test.com'
-            channel = Channel.objects.create(name=name, address=address , email = email ,  rc_number=rc_number , phone_number=phone_number )
+            channel = Channel.objects.create( 
+                name=name, address=address , email = email ,
+                rc_number=rc_number , phone_number=phone_number 
+            )
             code = 1234
             ChannelActivationCode.objects.create(email=email, code=int(code), user=user)
 
@@ -129,7 +132,12 @@ class ChannelActivationCodeConfirmApiView(generics.GenericAPIView):
             is_code_valid.first().delete()
             serializer = ChannelsSerializer(channel)
             return Response( serializer.data , status=status.HTTP_200_OK)
-        return Response({'success':False ,'detail': 'Channel activation code is invalid'} , status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'success':False ,
+            'detail': 'Channel activation code is invalid'
+            } , 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 class ChannelsRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView): 
     queryset = Channel.objects.all()
