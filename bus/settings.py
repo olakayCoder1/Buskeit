@@ -164,12 +164,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR , 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:8000', "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app"
-],
-ALLOWED_HOSTS = [
-    'localhost', "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app"
-],
+# CSRF_TRUSTED_ORIGINS = [
+#     'http://localhost:8000', "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app"
+# ],
+# ALLOWED_HOSTS = [
+#     'localhost', "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app"
+# ],
 
 
 PREMBLY_APP_ID = env('PREMBLY_APP_ID')  
