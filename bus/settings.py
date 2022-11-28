@@ -164,6 +164,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR , 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [ "*"],
+ALLOWED_HOSTS = ["*"],
+
 
 PREMBLY_APP_ID = env('PREMBLY_APP_ID')  
 PREMBLY_X_API_KEY = env('PREMBLY_X_API_KEY')
