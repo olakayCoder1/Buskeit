@@ -46,7 +46,7 @@ class ChannelUserSerializer(serializers.ModelSerializer):
 
     class Meta:  
         model = ChannelUser
-        fields = ['identifier', 'channel','is_admin', 'is_staff' , 'created_at' , 'updated_at' , 'students']
+        fields = ['identifier', 'channel','is_admin', 'is_staff' , 'is_parent', 'is_driver', 'created_at' , 'updated_at' , 'students'] 
 
         extra_kwargs = {
             'identifier':{'read_only' : True}, 
@@ -76,7 +76,7 @@ class ChannelUserSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     channel_accounts = serializers.SerializerMethodField('user_channels')
     image = serializers.SerializerMethodField('get_image')  
-    class Meta: 
+    class Meta:  
         model = User 
         fields = ['identifier', 'email' , 'first_name' , 'last_name', 'image','is_active', 'is_staff','is_verified', 'channel_accounts']
 

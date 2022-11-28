@@ -43,7 +43,12 @@ class ChannelUserSerializer(serializers.ModelSerializer):
     students = serializers.SerializerMethodField('get_students') 
     class Meta:  
         model = ChannelUser
-        fields = ['identifier','first_name', 'last_name','email' , 'channel','is_parent','is_admin', 'is_staff' , 'created_at' , 'updated_at', 'students' ]
+        fields = [ 
+            'identifier','first_name', 'last_name','email' , 
+            'channel','is_parent','is_admin', 'is_staff' , 'is_driver',
+            'is_driver' , 'latitude','longitude',
+            'created_at' , 'updated_at', 'students' 
+        ]
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
@@ -52,9 +57,13 @@ class ChannelUserSerializer(serializers.ModelSerializer):
             'is_parent':{'read_only' : True}, 
             'is_admin':{'read_only' : True}, 
             'is_staff':{'read_only' : True}, 
+            'latitude':{'read_only' : True}, 
+            'longitude':{'read_only' : True},     
+            'is_driver':{'read_only' : True},  
             'created_at':{'read_only' : True}, 
             'updated_at':{'read_only' : True}, 
         }
+
 
     def get_created_at(self,obj): 
         return obj.created_at.strftime("%m-%d-%Y")
@@ -64,7 +73,7 @@ class ChannelUserSerializer(serializers.ModelSerializer):
    
 
     def get_students(self, obj):
-        kids = Student.objects.filter(parent__identifier=obj.identifier , channel__identifier=obj.channel.identifier)
+        kids = Student.objects.filter(parent=obj , channel__identifier=obj.channel.identifier)
         return StudentSerializer(kids , many=True).data
 
     
@@ -83,7 +92,7 @@ class ChannelUserFullDetailSerializer(serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField('get_updated_at') 
     class Meta:  
         model = ChannelUser
-        fields = ['identifier', 'user' , 'channel','is_admin', 'is_staff' ,'children' , 'created_at' , 'updated_at' ]
+        fields = ['identifier', 'user' , 'channel','is_admin', 'is_staff' , 'is_parent', 'is_driver','children' , 'created_at' , 'updated_at' ]
 
         extra_kwargs = {
             'identifier':{'read_only' : True},

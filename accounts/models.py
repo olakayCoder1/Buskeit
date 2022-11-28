@@ -96,6 +96,7 @@ class AccountActivationCode(models.Model):
     email = models.EmailField()
     code = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    
 
 
 
@@ -111,9 +112,21 @@ class ChannelUser(models.Model):
     is_parent = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    # # test
+    is_driver = models.BooleanField(default=False)      
+    latitude = models.FloatField(max_length=100, null=True , blank=True)
+    longitude = models.FloatField(max_length=100 , null=True , blank=True )
+    # test
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
     def __str__(self) -> str:
         return self.email  
+
+
+    @classmethod
+    def check_user_exist(cls, channel , email):
+        if ChannelUser.objects.filter(channel=channel , email=email).exists():
+            return True
+        return False

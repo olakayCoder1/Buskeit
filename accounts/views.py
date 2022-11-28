@@ -143,8 +143,9 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
         if User.objects.filter(email=email).exists():
             """
                 check if the user as already register but have not verify his or her account yet
+                !!! CHECK IF THE CREATED AT IS MORE THAN 24 HOURS
             """
-            attempted_user = User.objects.filter(email=email , is_verified=False)
+            attempted_user = User.objects.filter(email=email , is_verified=False, )
             if attempted_user.exists():
                 user = attempted_user.first()
                 user.set_password(password2)
@@ -178,6 +179,10 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
 
 class UserAccountActivationCodeConfirmApiView(generics.GenericAPIView):
     serializer_class = UserAccountActivationCodeConfirmSerializer
+
+    """
+    Activate user account using the code sent to the user email
+    """
 
     @swagger_auto_schema(
         operation_description='Activate user account with the activation code',
@@ -329,7 +334,7 @@ class LoginApiView(generics.GenericAPIView):
                 }
                 return Response(response , status=status.HTTP_200_OK)
             
-            return Response({'success': False , 'detail': 'Invalid login credential'}, status=status.HTTP_200_OK)
+            return Response({'success': False , 'detail': 'Invalid login credential'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

@@ -31,6 +31,17 @@ import random
 import pandas as pd
 import re
 
+
+
+
+def get_channel_by_identifier(identifier):
+    try:
+        channel = Channel.objects.get(identifier=identifier)
+    except Channel.DoesNotExist:
+        return None
+    return channel
+
+
 # Create your views here.
 CustomUser = get_user_model()
 
@@ -40,18 +51,12 @@ def index(request):
     return HttpResponse('Hello')
 
 
-
-class ChannelsListCreateApiView(generics.ListCreateAPIView): 
+# !!! TODO , CHANGE THE VIEW TO ALLOW LIST ,  CREATE 
+class ChannelsListCreateApiView(generics.CreateAPIView):      
     permission_classes = [IsAuthenticated]
     queryset = Channel.objects.all()
     serializer_class = ChannelsSerializer  
     
-    @swagger_auto_schema(
-        operation_description='Get a list of all the available channels',
-        operation_summary='Get a list of all the available channels'
-    )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
 
     @swagger_auto_schema(
         operation_description='Create new channel the required fields are :\nName\nRc_number\nPhone number and \nAddress',
@@ -198,15 +203,12 @@ class ChannelStudentListCreateApiView(generics.ListCreateAPIView):
         student = Student.objects.filter(channel__identifier=self.kwargs.get('identifier'))
         return student
   
-    #  get the student of provided channel identifier\
+    #  get the student of provided channel identifier
     @swagger_auto_schema(
         operation_summary='Retrieve channel students list'
     )
     def get(self, request , identifier ):
-        try:
-            Channel.objects.get(identifier=identifier)
-        except Channel.DoesNotExist:
-            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        channel = get_channel_by_identifier(identifier)
         query = self.get_queryset()
         page = self.paginate_queryset(query)
         if page is not None:
@@ -246,10 +248,7 @@ class ChannelParentsListCreateAPIView(generics.ListCreateAPIView):
         operation_summary='Retrieve a channel parents list'
     )
     def get(self, request , identifier ):
-        try:
-            Channel.objects.get(identifier=identifier)
-        except Channel.DoesNotExist:
-            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        channel = get_channel_by_identifier(identifier)
         query = self.get_queryset()
         page = self.paginate_queryset(query)
         if page is not None:
@@ -260,10 +259,7 @@ class ChannelParentsListCreateAPIView(generics.ListCreateAPIView):
 
 
     def post(self, request , identifier ):
-        try:
-            channel = Channel.objects.get(identifier=identifier)
-        except:
-            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+        channel = get_channel_by_identifier(identifier)
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             first_name = serializer.validated_data.get('first_name', None )
@@ -339,10 +335,7 @@ class MapStudentsToParentApiView(generics.GenericAPIView):
 
     ) 
     def post(self, request, channel_identifier , channel_user_identifier ):
-        try:
-            channel = Channel.objects.get(identifier=channel_identifier)
-        except Channel.DoesNotExist:
-            return Response({'success': False , 'detail':'Channel does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        channel = get_channel_by_identifier(channel_identifier)
         if ChannelUser.objects.filter(user__id=request.user.id, channel=channel , is_admin=True) :
             try:
                 user = ChannelUser.objects.get(identifier=channel_user_identifier)
@@ -375,10 +368,10 @@ class ChannelVerifiedPickedStudentsAPIView(generics.ListAPIView):
     serializer_class = StudentPickUpVerificationHistorySerializer
 
     def get_queryset(self):
-        return StudentPickUpVerification.objects.filter(date=datetime.datetime.now().date() , student__channel__identifier=self.kwargs.get('identifier'))
-
-
-
+        return StudentPickUpVerification.objects.filter(
+            date=datetime.datetime.now().date() , 
+            student__channel__identifier=self.kwargs.get('identifier')
+        )
 
 
 
@@ -396,10 +389,7 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
         operation_description='Get the list of the user kids in a specific channel\nusing the channel identifier and the channel user identifier '
     )
     def get(self, request , channel_identifier , channel_user_identifier ): 
-        try:
-            channel = Channel.objects.get(identifier=channel_identifier)
-        except:
-            return Response({'success':False ,'detail': 'School does not exist'} , status=status.HTTP_404_NOT_FOUND)
+        channel = get_channel_by_identifier(channel_identifier)
         try:
             user = ChannelUser.objects.get(identifier=channel_user_identifier)
         except:
@@ -438,13 +428,13 @@ class ChannelParentKidsListAPIView(generics.ListAPIView):
     @swagger_auto_schema(
         operation_summary='Retrieve the list of a parent children'
     )
-    def get(self, request , channel_identifier ):
-        user = User.objects.get(id=request.user.id)
+    def get(self, request , channel_identifier , channel_user_identifier):
+        # user = User.objects.get(id=request.user.id) 
         try:
             channel = Channel.objects.get(identifier=channel_identifier)
         except:
-            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_400_BAD_REQUEST)
-        students = self.queryset.filter(channel=channel , parent__user__id=user.id)
+            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_404_NOT_FOUND)
+        students = self.queryset.filter(channel=channel , parent__identifier=channel_user_identifier)
         serializer = self.serializer_class( students , many=True)
         return  Response(serializer.data , status=status.HTTP_200_OK) 
 
@@ -524,7 +514,7 @@ class StudentPickUpVerificationHistoryApiView(generics.GenericAPIView) :
 class ChannelUserUploadCsvApiView(generics.CreateAPIView):
     queryset = ChannelUser.objects.all()
     serializer_class = ChannelUserUploadFileSerializer
-    permission_classes = [IsAuthenticated, IsChannelAdmin]
+    # permission_classes = [IsAuthenticated, IsChannelAdmin]
 
 
     @swagger_auto_schema(
@@ -535,7 +525,7 @@ class ChannelUserUploadCsvApiView(generics.CreateAPIView):
         try:
             channel = Channel.objects.get(identifier=identifier)
         except:
-            return Response({'success':False , 'detail':'Channel does not exist'})
+            return Response({'success':False , 'detail':'Channel does not exist'}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         file = serializer.validated_data['file']
@@ -544,14 +534,17 @@ class ChannelUserUploadCsvApiView(generics.CreateAPIView):
             try:
                 # first_name = row['Staff Sname']   
                 # last_name = row['Staff Oname']
-                first_name = row['FIRST_NAME']  
-                # last_name = row[1]
-                last_name = row['LAST_NAME']
-                email = row['EMAIL']  
+                # first_name = row['FIRST_NAME']  
+                first_name = row[3]
+                last_name = row[4]
+                print(last_name)  
+                # last_name = row['LAST_NAME']
+                # email = row['EMAIL']  
                 # This is a dummy sample creating user mail with the first name and the index of user in row
-                # email = f'{first_name}{str(_)}@gmail.com'
-                # pattern = re.compile(r'\s+')
-                # email = re.sub(pattern,'', email) 
+                email = f'{first_name}{str(_)}@gmail.com'
+                pattern = re.compile(r'\s+')
+                email = re.sub(pattern,'', email)   
+                print(email)
             except:
                 return Response({'success':False, 'detail':'Invalid csv format'}, status=status.HTTP_400_BAD_REQUEST)
             user_exist = ChannelUser.objects.filter(email=email,channel=channel).first()
@@ -600,3 +593,34 @@ class ChannelStudentUploadCsvApiView(generics.CreateAPIView):
                 pass
         return Response({'success': True ,'detail':'Student uploaded successfully' }, status=status.HTTP_201_CREATED)
     
+
+
+class ChannelRegisterDriver(generics.GenericAPIView):
+    serializer_class = ChannelUserSerializer
+    queryset = ChannelUser.objects.all()
+    
+    def get(self, request, identifier):
+        channel = get_channel_by_identifier(identifier)
+        if channel is None : 
+            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_200_OK)
+
+
+    def post(self, request, identifier ,  *args, **kwargs):
+        channel = get_channel_by_identifier(identifier)
+        if channel is None :
+            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_404_NOT_FOUND)
+        data = request.data 
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        if ChannelUser.check_user_exist( channel=channel ,email=serializer.validated_data['email']) :
+            return Response({'success':False , "detail": 'Email already exist in this channel'}, status=status.HTTP_400_BAD_REQUEST)
+        new_user = ChannelUser.objects.create(
+            first_name = serializer.validated_data['first_name'],
+            last_name = serializer.validated_data['last_name'],
+            email = serializer.validated_data['email'],
+            channel=channel,
+            is_driver = True
+        )    
+        new_user.save()
+        return Response(self.serializer_class(new_user).data , status=status.HTTP_201_CREATED)

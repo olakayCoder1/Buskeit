@@ -31,7 +31,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG' , default=False)
 
-ALLOWED_HOSTS = ["*"] 
+ALLOWED_HOSTS = ["*", "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app"] 
 
 
 # Application definition
@@ -112,8 +112,8 @@ DATABASES = {
 #     }
 # }
 
-db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES['default'].update(db_from_env)
+# db_from_env = dj_database_url.config(conn_max_age=600)
+# DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
