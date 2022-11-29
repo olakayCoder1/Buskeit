@@ -37,6 +37,11 @@ class ChannelActivationCodeConfirmSerializer(serializers.Serializer):
     code = serializers.CharField(allow_blank=False) 
 
 
+class ChannelDriverLocationUpdateSerializer(serializers.Serializer):
+    channel_user_identifier = serializers.CharField(allow_blank=False)
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()   
+
 class ChannelUserSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField('get_created_at') 
     updated_at = serializers.SerializerMethodField('get_updated_at') 

@@ -14,7 +14,7 @@ from .paginations import CustomPagination
 from .serializers import  (
     ChannelsSerializer , ChannelJoinSerializer , StudentPickUpVerificationHistorySerializer,
      ChannelUserSerializer , ChannelUserFullDetailSerializer , ChannelActivationCodeConfirmSerializer ,
-     ChannelUserUploadFileSerializer , MapStudentsToParentSerializer
+     ChannelUserUploadFileSerializer , MapStudentsToParentSerializer ,ChannelDriverLocationUpdateSerializer
 )
 
 from rest_framework.permissions import AllowAny , IsAuthenticated
@@ -598,14 +598,10 @@ class ChannelStudentUploadCsvApiView(generics.CreateAPIView):
 class ChannelRegisterDriver(generics.GenericAPIView):
     serializer_class = ChannelUserSerializer
     queryset = ChannelUser.objects.all()
-    
-    def get(self, request, identifier):
-        channel = get_channel_by_identifier(identifier)
-        if channel is None : 
-            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_404_NOT_FOUND)
-        return Response(status=status.HTTP_200_OK)
 
-
+    @swagger_auto_schema(
+        operation_summary='Add driver to channel/'
+    )
     def post(self, request, identifier ,  *args, **kwargs):
         channel = get_channel_by_identifier(identifier)
         if channel is None :
@@ -624,3 +620,51 @@ class ChannelRegisterDriver(generics.GenericAPIView):
         )    
         new_user.save()
         return Response(self.serializer_class(new_user).data , status=status.HTTP_201_CREATED)
+
+
+
+class ChannelDriverLocation(generics.GenericAPIView):
+    serializer_class = ChannelUserSerializer
+    queryset = ChannelUser.objects.all()
+
+    @swagger_auto_schema(
+        operation_summary='Retrieve the locations of the drivers'
+    )
+    def get(self, request, identifier ,  *args, **kwargs):
+        channel = get_channel_by_identifier(identifier)
+        if channel is None :
+            return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_404_NOT_FOUND)
+        drivers = ChannelUser.objects.filter(channel=channel , is_driver=True )
+        result = {}
+        for driver in drivers:
+            current = {}
+            if driver.latitude and driver.longitude :
+                current[driver.first_name] = [driver.latitude , driver.longitude ]  
+                result.update(current)   
+        if len(result) > 0 :
+            response = {'success': True, 'drivers' : result }   
+            return Response(response , status=status.HTTP_200_OK) 
+        response = { 'success': True,'detail' : 'All bus location is inactive' }
+        return Response(response , status=status.HTTP_200_OK)
+
+
+class ChannelDriverLocationUpdate(generics.GenericAPIView):
+    serializer_class = ChannelDriverLocationUpdateSerializer 
+    queryset = ChannelUser.objects.all()
+
+    @swagger_auto_schema(
+        operation_summary='Update the location of a driver'
+    )
+    def post(self, request, *args, **kwargs):
+        data = request.data 
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = ChannelUser.objects.get(identifier=serializer.validated_data['channel_user_identifier'])
+        except ChannelUser.DoesNotExist:
+            return Response({'success':False ,'detail': 'Channel user does not exist'} , status=status.HTTP_404_NOT_FOUND)
+        user.latitude = serializer.validated_data[ 'latitude'] 
+        user.longitude = serializer.validated_data[ 'longitude']
+        user.save()
+        
+        return Response( status=status.HTTP_200_OK) 

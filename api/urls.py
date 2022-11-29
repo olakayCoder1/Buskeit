@@ -29,7 +29,10 @@ urlpatterns = [
     path('channels/parents/<str:identifier>', views.ChannelParentRetrieveUpdateDestroy.as_view(), name='retrieve-update-destroy-channel-parent'),
     path('channels/<str:channel_identifier>/parents/<str:channel_user_identifier>/students', views.ChannelParentKidsListAPIView.as_view(), name='retrieve-parent-children-in-channel'),
     path('channels/<str:identifier>/parents/upload', views.ChannelUserUploadCsvApiView.as_view(), name='channel-users-upload'),
-    path('channels/<str:identifier>/driver/register', views.ChannelRegisterDriver.as_view() , name='ChannelRegisterDriver'),
+
+    path('channels/<str:identifier>/drivers/register', views.ChannelRegisterDriver.as_view() , name='ChannelRegisterDriver'),
+    path('channels/<str:identifier>/drivers/location', views.ChannelDriverLocation.as_view() , name='ChannelDriverLocation'),
+    path('channels/drivers/locations/update', views.ChannelDriverLocationUpdate.as_view() , name='ChannelDriverLocationUpdate'), 
     # path('channels/<str:channel_identifier>/parents/<str:channel_user_identifier>/map', views.MapStudentsToParentApiView.as_view(), name='list-channel-user-kids'), 
     # path('channels/<str:channel_identifier>/kids', views.ChannelParentKidsListAPIView.as_view() , name='parent-retrieve-kid-list'),
     # path('channels/<str:channel_identifier>/users/<str:channel_user_identifier>', views.ChannelUsersRetrieveUpdateDestroyAPIView.as_view(), name='retrieve-update-destroy-channeluser'),

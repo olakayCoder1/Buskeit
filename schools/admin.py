@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Channel , StudentPickUpVerification
+from .models import Channel , StudentPickUpVerification , Location
 # Register your models here.
 
 
@@ -9,3 +9,4 @@ class CustomStudentPickUpVerificationModelAdmin(admin.ModelAdmin):
 
 admin.site.register(StudentPickUpVerification , CustomStudentPickUpVerificationModelAdmin)   
 admin.site.register(Channel)   
+admin.site.register(Location)    

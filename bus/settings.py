@@ -112,8 +112,8 @@ DATABASES = {
 #     }
 # }
 
-# db_from_env = dj_database_url.config(conn_max_age=600)
-# DATABASES['default'].update(db_from_env)
+db_from_env = dj_database_url.config(conn_max_age=600)
+DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -164,15 +164,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR , 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [ 
-    "*",'http://localhost:8000', "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app",'127.0.0.1',
-]
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:8000', "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app",'127.0.0.1',
-]
-ALLOWED_HOSTS = [
-    'localhost', "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app",'127.0.0.1',
-]
+
+# CSRF_TRUSTED_ORIGINS = [
+#     'http://localhost:8000', 
+#     "https://web-production-9028.up.railway.app", 
+#     '127.0.0.1',
+# ]
+# ALLOWED_HOSTS = [
+#     'localhost', 
+#     "https://web-production-9028.up.railway.app", 
+#     '127.0.0.1',
+# ]
 
 
 PREMBLY_APP_ID = env('PREMBLY_APP_ID')  

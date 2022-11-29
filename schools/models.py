@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 def upload_to(instance, filename):
     return 'channels/{filename}'.format(filename=filename)
@@ -46,6 +47,22 @@ class StudentPickUpVerification(models.Model):
 
     def __str__(self) -> str:
         return self.student.first_name
+
+
+class Location(models.Model):
+    user = models.ForeignKey(
+        'accounts.ChannelUser',
+        on_delete=models.CASCADE , 
+        help_text=_(
+            'Related to the channel user object that this instance belong to'
+        )
+    )
+    latitude = models.FloatField(max_length=100, null=True , blank=True)
+    longitude = models.FloatField(max_length=100 , null=True , blank=True )
+    is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
 
 
