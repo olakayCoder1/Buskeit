@@ -31,7 +31,11 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG' , default=False)
 
-ALLOWED_HOSTS = ["*", "https://web-production-9028.up.railway.app", "web-production-9028.up.railway.app"] 
+ALLOWED_HOSTS = [ 
+    "*", 
+    "https://buskeit-production.up.railway.app/", 
+    "buskeit-production.up.railway.app/"       
+] 
 
 
 # Application definition
@@ -165,16 +169,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-# CSRF_TRUSTED_ORIGINS = [
-#     'http://localhost:8000', 
-#     "https://web-production-9028.up.railway.app", 
-#     '127.0.0.1',
-# ]
-# ALLOWED_HOSTS = [
-#     'localhost', 
-#     "https://web-production-9028.up.railway.app", 
-#     '127.0.0.1',
-# ]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000', 
+    "https://buskeit-production.up.railway.app/", 
+    'http://127.0.0.1',
+]
+
 
 
 PREMBLY_APP_ID = env('PREMBLY_APP_ID')  
@@ -216,6 +216,9 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') 
 
 #  Custom admin dashbord settings
 JAZZMIN_SETTINGS = {
