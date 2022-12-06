@@ -365,7 +365,7 @@ class AccountEmailVerificationConfirmApiView(APIView):
 
 email_vetting_response = {
     "status": True,
-    "response_code": "0",
+    "response_code": "00",
     "message": "Successful",
     "data": {
         "basic": {
@@ -578,114 +578,115 @@ email_vetting_response = {
 
 
 
-# {
-#     "status": true,
-#     "response_code": "00",
-#     "message": "Successful",
-#     "data": {
-#         "basic": {
-#             "valid": true,
-#             "number": "2348030000000",
-#             "local_format": "08030000000",
-#             "international_format": "+2348030000000",
-#             "country_prefix": "+234",
-#             "country_code": "NG",
-#             "country_name": "Nigeria (Federal Republic of)",
-#             "location": "",
-#             "carrier": "MTN Nigeria Communications Ltd",
-#             "line_type": "mobile"
-#         },
-#         "socials": [
-#             "facebook.com",
-#             "twitter.com",
-#             "linkedin.com",
-#             "instagram.com",
-#             "vk.com"
-#         ],
-#         "other_social_media": {
-#             "is_registered": true,
-#             "profile_picture": "",
-#             "contact_info": {
-#                 "businessProfile": {
-#                     "id": {
-#                         "server": "c.us",
-#                         "user": "2348030000000",
-#                         "_serialized": "2348030000000@c.us"
-#                     },
-#                     "tag": "4107712435",
-#                     "description": "I solve problems with Python and Javascript.\nI am your favourite software engineer👨🏻‍💻",
-#                     "categories": [
-#                         {
-#                             "id": "176831012360626",
-#                             "localized_display_name": "Professional Service"
-#                         }
-#                     ],
-#                     "profileOptions": {
-#                         "commerceExperience": "none",
-#                         "cartEnabled": true
-#                     },
-#                     "email": "email@email.com",
-#                     "website": [
-#                         "https://sitelink.com"
-#                     ],
-#                     "latitude": 6.5244,
-#                     "longitude": 3.3792,
-#                     "businessHours": {
-#                         "config": {
-#                             "sun": {
-#                                 "mode": "open_24h"
-#                             },
-#                             "mon": {
-#                                 "mode": "open_24h"
-#                             },
-#                             "tue": {
-#                                 "mode": "open_24h"
-#                             },
-#                             "wed": {
-#                                 "mode": "open_24h"
-#                             },
-#                             "thu": {
-#                                 "mode": "open_24h"
-#                             },
-#                             "fri": {
-#                                 "mode": "open_24h"
-#                             },
-#                             "sat": {
-#                                 "mode": "open_24h"
-#                             }
-#                         },
-#                         "timezone": "Africa/Lagos"
-#                     },
-#                     "address": "Lagos, Nigeria",
-#                     "fbPage": {},
-#                     "igProfessional": {},
-#                     "isProfileLinked": false,
-#                     "customUrlPaths": [],
-#                     "coverPhoto": null
-#                 },
-#                 "id": {
-#                     "server": "c.us",
-#                     "user": "23480",
-#                     "_serialized": "2348030000000@c.us"
-#                 },
-#                 "number": "2348030000000",
-#                 "isBusiness": true,
-#                 "isEnterprise": false,
-#                 "labels": [],
-#                 "pushname": "Segun Isreal A.",
-#                 "type": "in",
-#                 "verifiedLevel": 0,
-#                 "verifiedName": "Segun Isreal A.",
-#                 "isMe": true,
-#                 "isUser": true,
-#                 "isGroup": false,
-#                 "isWAContact": true,
-#                 "isMyContact": false,
-#                 "isBlocked": false
-#             }
-#         }
-#     }
-# }
+
+phone_vetting_response = {
+    "status": True,
+    "response_code": "00",
+    "message": "Successful",
+    "data": {
+        "basic": {
+            "valid": True,
+            "number": "2348030000000",
+            "local_format": "08030000000",
+            "international_format": "+2348030000000",
+            "country_prefix": "+234",
+            "country_code": "NG",
+            "country_name": "Nigeria (Federal Republic of)",
+            "location": "",
+            "carrier": "MTN Nigeria Communications Ltd",
+            "line_type": "mobile"
+        },
+        "socials": [
+            "facebook.com",
+            "twitter.com",
+            "linkedin.com",
+            "instagram.com",
+            "vk.com"
+        ],
+        "other_social_media": {
+            "is_registered": True,
+            "profile_picture": "",
+            "contact_info": {
+                "businessProfile": {
+                    "id": {
+                        "server": "c.us",
+                        "user": "2348030000000",
+                        "_serialized": "2348030000000@c.us"
+                    },
+                    "tag": "4107712435",
+                    "description": "I solve problems with Python and Javascript.\nI am your favourite software engineer👨🏻‍💻",
+                    "categories": [
+                        {
+                            "id": "176831012360626",
+                            "localized_display_name": "Professional Service"
+                        }
+                    ],
+                    "profileOptions": {
+                        "commerceExperience": "none",
+                        "cartEnabled": True
+                    },
+                    "email": "email@email.com",
+                    "website": [
+                        "https://sitelink.com"
+                    ],
+                    "latitude": 6.5244,
+                    "longitude": 3.3792,
+                    "businessHours": {
+                        "config": {
+                            "sun": {
+                                "mode": "open_24h"
+                            },
+                            "mon": {
+                                "mode": "open_24h"
+                            },
+                            "tue": {
+                                "mode": "open_24h"
+                            },
+                            "wed": {
+                                "mode": "open_24h"
+                            },
+                            "thu": {
+                                "mode": "open_24h"
+                            },
+                            "fri": {
+                                "mode": "open_24h"
+                            },
+                            "sat": {
+                                "mode": "open_24h"
+                            }
+                        },
+                        "timezone": "Africa/Lagos"
+                    },
+                    "address": "Lagos, Nigeria",
+                    "fbPage": {},
+                    "igProfessional": {},
+                    "isProfileLinked": False,
+                    "customUrlPaths": [],
+                    "coverPhoto": None
+                },
+                "id": {
+                    "server": "c.us",
+                    "user": "23480",
+                    "_serialized": "2348030000000@c.us"
+                },
+                "number": "2348030000000",
+                "isBusiness": True,
+                "isEnterprise": False,
+                "labels": [],
+                "pushname": "Segun Isreal A.",
+                "type": "in",
+                "verifiedLevel": 0,
+                "verifiedName": "Segun Isreal A.",
+                "isMe": True,
+                "isUser": True,
+                "isGroup": False,
+                "isWAContact": True,
+                "isMyContact": False,
+                "isBlocked": False
+            }
+        }
+    }
+}
 
 
 
@@ -700,23 +701,39 @@ class UserVettingApiView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         response = email_vetting_response
+        response_phone = phone_vetting_response
         # print(response)
 #   "email": "user@gmail.com",
 #             "reputation": "high", malicious_activity
 #             "suspicious": False ,
-        if response['response_code'] == '00' :
-            print(response['data']['other']['email'])
-            print(response['data']['other']['reputation'])
-            print(response['data']['other']['suspicious'])
-
-            response_data = {'success':True , 'detail':'Verification successful'}
-
+        response_data = {'success':True , 'detail':'Verification successful'}
+        
+        if response_phone['response_code'] == '00' :
+            if response_phone['data']['basic']['valid']:
+                response_data.update({
+                    "valid": True,
+                    "number": "2348030000000",
+                    "country_prefix": "+234",
+                    "country_code": "NG",
+                    "country_name": "Nigeria (Federal Republic of)",
+                    "carrier": "MTN Nigeria Communications Ltd",
+                    "line_type": "mobile",
+                    "verifiedName": "Segun Isreal A.",
+                    "socials": [
+                    "facebook.com",
+                    "twitter.com",
+                    "linkedin.com",
+                    "instagram.com",
+                    "vk.com"
+                    ]
+                })
+        
+        if response['response_code'] == '00' :          
             response_data.update({'reputation': 'High'}) if response['data']['other']['reputation'] == 'high' else response_data.update({ 'reputation': 'Low'})
             response_data.update({'suspicious': 'User is suspicious'}) if response['data']['other']['suspicious'] else response_data.update({'suspicious': 'User not suspicious'})
 
             if response['data']['other']['details']['malicious_activity'] == True:
                 response_data.update({'malicious_activity' : 'Malicious activity found' })
-
             else:
                 response_data.update({  'malicious_activity' : 'Malicious activity not found' })
 
