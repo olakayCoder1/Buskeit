@@ -1,7 +1,7 @@
 import random
 import string
 from threading import Thread
-
+from .signals import random_string_generator_user
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import DjangoUnicodeDecodeError, force_bytes,   force_str, smart_str
@@ -138,6 +138,7 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
         email = serializer.validated_data['email']
         password1 = serializer.validated_data['password1']
         password2 = serializer.validated_data['password2']
+
         if password1 != password2 :
                 return  Response({'success':False ,'detail': 'Password does not match'} , status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(email=email).exists():
@@ -166,6 +167,7 @@ class UserRegisterWithPremblyEmailConfirmApiView(generics.GenericAPIView):
                         'email': email , 'code' : code
                     }).start()
             user = User.objects.create(email=email)
+            user.identifier =  random_string_generator_user()
             user.set_password(password2)
             user.is_active = False
             user.save()

@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from .models import User , Student , ChannelUser
 from rest_framework.authtoken.models import Token
 
+
 def random_string_generator_user(size=15, chars = string.ascii_uppercase + string.digits):
     result = ''.join(random.choice(chars) for _ in range(size))
     result = 'US'+result
@@ -30,12 +31,12 @@ def random_string_generator_channel_user(size=13, chars = string.ascii_uppercase
 
 
 
-@receiver(post_save , sender=User)
-def user_profile_signal(sender, instance , created , **kwarg):
-    if created:
-        instance.identifier = random_string_generator_user()
-        instance.save()
-        Token.objects.create(user=instance)
+# @receiver(post_save , sender=User)
+# def user_profile_signal(sender, instance , created , **kwarg):
+#     if created:
+#         instance.identifier = random_string_generator_user()
+#         instance.save()
+#         Token.objects.create(user=instance)
 
         
 

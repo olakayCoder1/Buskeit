@@ -52,11 +52,22 @@ def index(request):
 
 
 # !!! TODO , CHANGE THE VIEW TO ALLOW LIST ,  CREATE 
-class ChannelsListCreateApiView(generics.CreateAPIView):      
+class ChannelsListCreateApiView(generics.GenericAPIView):      
     permission_classes = [IsAuthenticated]
     queryset = Channel.objects.all()
     serializer_class = ChannelsSerializer  
     
+
+    @swagger_auto_schema(
+        operation_description='Retrieve users channel list',
+        operation_summary='Retrieve users channel list'
+    )
+    def get(self, request, *args, **kwargs):
+        # data = ChannelUser.objects.filter(user__id=1)   
+        data = ChannelUser.objects.filter(user__id=request.user.id)
+        serializer = ChannelUserSerializer(data, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK ) 
+
 
     @swagger_auto_schema(
         operation_description='Create new channel the required fields are :\nName\nRc_number\nPhone number and \nAddress',
