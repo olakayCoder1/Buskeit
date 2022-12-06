@@ -1,0 +1,556 @@
+{
+    "status": true,
+    "response_code": "00",
+    "message": "Successful",
+    "data": {
+        "basic": {
+            "smtp-status": "ok",
+            "domain-error": false,
+            "verified": true,
+            "is-freemail": true,
+            "is-disposable": false,
+            "valid": true,
+            "is-catch-all": false,
+            "is-deferred": false,
+            "provider": "gmail.com",
+            "domain": "gmail.com",
+            "smtp-response": "250 2.1.5 OK oz43-20020a1709077dab00b0072ac7a2726esi1583583ejc.474 - gsmtp",
+            "syntax-error": false,
+            "email": "user@gmail.com",
+            "is-personal": true
+        },
+        "other": {
+            "email": "user@gmail.com",
+            "reputation": "high",
+            "suspicious": false,
+            "references": 5,
+            "details": {
+                "blacklisted": false,
+                "malicious_activity": false,
+                "malicious_activity_recent": false,
+                "credentials_leaked": true,
+                "credentials_leaked_recent": false,
+                "data_breach": true,
+                "first_seen": "05/24/2019",
+                "last_seen": "10/03/2020",
+                "domain_exists": true,
+                "domain_reputation": "n/a",
+                "new_domain": false,
+                "days_since_domain_creation": 9824,
+                "suspicious_tld": false,
+                "spam": false,
+                "free_provider": true,
+                "disposable": false,
+                "deliverable": true,
+                "accept_all": false,
+                "valid_mx": true,
+                "primary_mx": "gmail-smtp-in.l.google.com",
+                "spoofable": true,
+                "spf_strict": true,
+                "dmarc_enforced": false,
+                "profiles": [
+                    "twitter",
+                    "gravatar"
+                ]
+            }
+        },
+        "domain_info": {
+            "domain_name": "GMAIL.COM",
+            "registry_domain_id": "4667231_DOMAIN_COM-VRSN",
+            "registrar_whois_server": "whois.markmonitor.com",
+            "registrar_url": "http",
+            "updated_date": "2021-07-11T09",
+            "creation_date": "1995-08-13T04",
+            "registry_expiry_date": "2022-08-12T04",
+            "registrar": "MarkMonitor Inc.",
+            "registrar_iana_id": "292",
+            "registrar_abuse_contact_email": "abusecomplaints@markmonitor.com",
+            "registrar_abuse_contact_phone": "+1.2086851750",
+            "domain_status": "serverUpdateProhibited https",
+            "name_server": "NS4.GOOGLE.COM",
+            "dnssec": "unsigned",
+            "url_of_the_icann_whois_inaccuracy_complaint_form": "https",
+            "last_update_of_whois_database": "2022-07-07T08"
+        },
+        "breaches": [
+            {
+                "Name": "Appen",
+                "Title": "Appen",
+                "Domain": "appen.com",
+                "BreachDate": "2020-06-22",
+                "AddedDate": "2020-07-30T07:00:21Z",
+                "ModifiedDate": "2020-07-30T07:00:21Z",
+                "PwnCount": 5888405,
+                "Description": "In June 2020, the AI training data company <a href=\"https://www.bleepingcomputer.com/news/security/hacker-leaks-386-million-user-records-from-18-companies-for-free/\" target=\"_blank\" rel=\"noopener\">Appen suffered a data breach</a> exposing the details of almost 5.9 million users which were subsequently sold online. Included in the breach were names, email addresses and passwords stored as bcrypt hashes. Some records also contained phone numbers, employers and IP addresses. The data was provided to HIBP by <a href=\"https://dehashed.com/\" target=\"_blank\" rel=\"noopener\">dehashed.com</a>.",
+                "LogoPath": "https://haveibeenpwned.com/Content/Images/PwnedLogos/Appen.png",
+                "DataClasses": [
+                    "Email addresses",
+                    "Employers",
+                    "IP addresses",
+                    "Names",
+                    "Passwords",
+                    "Phone numbers"
+                ],
+                "IsVerified": true,
+                "IsFabricated": false,
+                "IsSensitive": false,
+                "IsRetired": false,
+                "IsSpamList": false,
+                "IsMalware": false
+            },
+            {
+                "Name": "Canva",
+                "Title": "Canva",
+                "Domain": "canva.com",
+                "BreachDate": "2019-05-24",
+                "AddedDate": "2019-08-09T14:24:01Z",
+                "ModifiedDate": "2019-08-09T14:24:01Z",
+                "PwnCount": 137272116,
+                "Description": "In May 2019, the graphic design tool website <a href=\"https://support.canva.com/contact/customer-support/may-24-security-incident-faqs/\" target=\"_blank\" rel=\"noopener\">Canva suffered a data breach</a> that impacted 137 million subscribers. The exposed data included email addresses, usernames, names, cities of residence and passwords stored as bcrypt hashes for users not using social logins. The data was provided to HIBP by a source who requested it be attributed to \"JimScott.Sec@protonmail.com\".",
+                "LogoPath": "https://haveibeenpwned.com/Content/Images/PwnedLogos/Canva.png",
+                "DataClasses": [
+                    "Email addresses",
+                    "Geographic locations",
+                    "Names",
+                    "Passwords",
+                    "Usernames"
+                ],
+                "IsVerified": true,
+                "IsFabricated": false,
+                "IsSensitive": false,
+                "IsRetired": false,
+                "IsSpamList": false,
+                "IsMalware": false
+            },
+            {
+                "Name": "Gravatar",
+                "Title": "Gravatar",
+                "Domain": "gravatar.com",
+                "BreachDate": "2020-10-03",
+                "AddedDate": "2021-12-05T22:45:58Z",
+                "ModifiedDate": "2021-12-08T01:47:02Z",
+                "PwnCount": 113990759,
+                "Description": "In October 2020, <a href=\"https://www.bleepingcomputer.com/news/security/online-avatar-service-gravatar-allows-mass-collection-of-user-info/\" target=\"_blank\" rel=\"noopener\">a security researcher published a technique for scraping large volumes of data from Gravatar, the service for providing globally unique avatars </a>. 167 million names, usernames and MD5 hashes of email addresses used to reference users' avatars were subsequently scraped and distributed within the hacking community. 114 million of the MD5 hashes were cracked and distributed alongside the source hash, thus disclosing the original email address and accompanying data. Following the impacted email addresses being searchable in HIBP, <a href=\"https://en.gravatar.com/support/data-privacy\" target=\"_blank\" rel=\"noopener\">Gravatar release an FAQ detailing the incident</a>.",
+                "LogoPath": "https://haveibeenpwned.com/Content/Images/PwnedLogos/Gravatar.png",
+                "DataClasses": [
+                    "Email addresses",
+                    "Names",
+                    "Usernames"
+                ],
+                "IsVerified": true,
+                "IsFabricated": false,
+                "IsSensitive": false,
+                "IsRetired": false,
+                "IsSpamList": false,
+                "IsMalware": false
+            }
+        ],
+        "identitypass_verification": {
+            "status": false,
+            "response_code": "05",
+            "message": "Endpoint has been disable or inactive...please contact administrator"
+        },
+        "kyc": {},
+        "instagram": {
+            "active": true,
+            "data": {}
+        },
+        "pinterest": {
+            "active": true,
+            "data": {}
+        },
+        "twitter": {
+            "active": true,
+            "data": {}
+        },
+        "gravatar": {
+            "active": true,
+            "data": {
+                "entry": [
+                    {
+                        "id": "117899327",
+                        "hash": "dc37423cea1ea33099a1667a2bc4550f",
+                        "requestHash": "dc37423cea1ea33099a1667a2bc4550f",
+                        "profileUrl": "http://gravatar.com/rugipo",
+                        "preferredUsername": "rugipo",
+                        "thumbnailUrl": "https://secure.gravatar.com/avatar/dc37423cea1ea33099a1667a2bc4550f",
+                        "photos": [
+                            {
+                                "value": "https://secure.gravatar.com/avatar/dc37423cea1ea33099a1667a2bc4550f",
+                                "type": "thumbnail"
+                            }
+                        ],
+                        "name": {
+                            "givenName": "Name",
+                            "familyName": "Surname",
+                            "formatted": "Full Name"
+                        },
+                        "displayName": "codeAdept",
+                        "urls": []
+                    }
+                ]
+            }
+        },
+        "github": {
+            "active": false,
+            "data": {}
+        },
+        "discord": {
+            "active": true,
+            "data": {}
+        },
+        "ebay": {
+            "active": false,
+            "data": {}
+        },
+        "linkedin": {
+            "active": true,
+            "data": {}
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+{
+    "status": true,
+    "response_code": "00",
+    "message": "Successful",
+    "data": {
+        "basic": {
+            "valid": true,
+            "number": "2348030000000",
+            "local_format": "08030000000",
+            "international_format": "+2348030000000",
+            "country_prefix": "+234",
+            "country_code": "NG",
+            "country_name": "Nigeria (Federal Republic of)",
+            "location": "",
+            "carrier": "MTN Nigeria Communications Ltd",
+            "line_type": "mobile"
+        },
+        "socials": [
+            "facebook.com",
+            "twitter.com",
+            "linkedin.com",
+            "instagram.com",
+            "vk.com"
+        ],
+        "other_social_media": {
+            "is_registered": true,
+            "profile_picture": "",
+            "contact_info": {
+                "businessProfile": {
+                    "id": {
+                        "server": "c.us",
+                        "user": "2348030000000",
+                        "_serialized": "2348030000000@c.us"
+                    },
+                    "tag": "4107712435",
+                    "description": "I solve problems with Python and Javascript.\nI am your favourite software engineer👨🏻‍💻",
+                    "categories": [
+                        {
+                            "id": "176831012360626",
+                            "localized_display_name": "Professional Service"
+                        }
+                    ],
+                    "profileOptions": {
+                        "commerceExperience": "none",
+                        "cartEnabled": true
+                    },
+                    "email": "email@email.com",
+                    "website": [
+                        "https://sitelink.com"
+                    ],
+                    "latitude": 6.5244,
+                    "longitude": 3.3792,
+                    "businessHours": {
+                        "config": {
+                            "sun": {
+                                "mode": "open_24h"
+                            },
+                            "mon": {
+                                "mode": "open_24h"
+                            },
+                            "tue": {
+                                "mode": "open_24h"
+                            },
+                            "wed": {
+                                "mode": "open_24h"
+                            },
+                            "thu": {
+                                "mode": "open_24h"
+                            },
+                            "fri": {
+                                "mode": "open_24h"
+                            },
+                            "sat": {
+                                "mode": "open_24h"
+                            }
+                        },
+                        "timezone": "Africa/Lagos"
+                    },
+                    "address": "Lagos, Nigeria",
+                    "fbPage": {},
+                    "igProfessional": {},
+                    "isProfileLinked": false,
+                    "customUrlPaths": [],
+                    "coverPhoto": null
+                },
+                "id": {
+                    "server": "c.us",
+                    "user": "23480",
+                    "_serialized": "2348030000000@c.us"
+                },
+                "number": "2348030000000",
+                "isBusiness": true,
+                "isEnterprise": false,
+                "labels": [],
+                "pushname": "Segun Isreal A.",
+                "type": "in",
+                "verifiedLevel": 0,
+                "verifiedName": "Segun Isreal A.",
+                "isMe": true,
+                "isUser": true,
+                "isGroup": false,
+                "isWAContact": true,
+                "isMyContact": false,
+                "isBlocked": false
+            }
+        }
+    }
+}
+
+
+
+
+{
+    "status": true,
+    "response_code": "00",
+    "message": "Successful",
+    "data": {
+        "first_seen": "2022-07-07T09:46:17.867890Z",
+        "last_seen": "2022-07-07T09:46:17.968920Z",
+        "no_of_time_seen": 1,
+        "basic": {
+            "status": "success",
+            "continent": "Africa",
+            "continentCode": "AF",
+            "country": "Morocco",
+            "countryCode": "MA",
+            "region": "05",
+            "regionName": "Beni Mellal-Khenifra",
+            "city": "Beni Mellal",
+            "district": "",
+            "zip": "",
+            "lat": 32.3372,
+            "lon": -6.34983,
+            "timezone": "Africa/Casablanca",
+            "offset": 3600,
+            "currency": "MAD",
+            "isp": "Rabat 4G MarocTelecom",
+            "org": "",
+            "as": "AS6713 Office National des Postes et Telecommunications ONPT (Maroc Telecom) / IAM",
+            "asname": "IAM-AS",
+            "reverse": "",
+            "mobile": true,
+            "proxy": false,
+            "hosting": false,
+            "query": "102.48.64.201"
+        },
+        "block_list": {
+            "is-hijacked": false,
+            "is-spider": false,
+            "is-tor": false,
+            "is-dshield": false,
+            "is-vpn": false,
+            "ip": "102.48.64.201",
+            "is-spyware": false,
+            "is-spam-bot": false,
+            "blocklists": [],
+            "last-seen": 0,
+            "is-bot": false,
+            "sensors": [],
+            "list-count": 0,
+            "cidr": "",
+            "is-listed": false,
+            "is-proxy": false,
+            "is-malware": false,
+            "is-exploit-bot": false
+        },
+        "black_lists": [
+            {
+                "all.s5h.net": false
+            },
+            {
+                "b.barracudacentral.org": false
+            },
+            {
+                "bl.spamcop.net": false
+            },
+            {
+                "blacklist.woody.ch": false
+            },
+            {
+                "bogons.cymru.com": false
+            },
+            {
+                "cbl.abuseat.org": false
+            },
+            {
+                "cdl.anti-spam.org.cn": false
+            },
+            {
+                "combined.abuse.ch": false
+            },
+            {
+                "db.wpbl.info": false
+            },
+            {
+                "dnsbl-1.uceprotect.net": false
+            },
+            {
+                "dnsbl-2.uceprotect.net": false
+            },
+            {
+                "dnsbl-3.uceprotect.net": false
+            },
+            {
+                "dnsbl.anticaptcha.net": false
+            },
+            {
+                "dnsbl.dronebl.org": false
+            },
+            {
+                "dnsbl.inps.de": false
+            },
+            {
+                "dnsbl.sorbs.net": false
+            },
+            {
+                "dnsbl.spfbl.net": true
+            },
+            {
+                "drone.abuse.ch": false
+            },
+            {
+                "duinv.aupads.org": false
+            },
+            {
+                "dul.dnsbl.sorbs.net": false
+            },
+            {
+                "dyna.spamrats.com": false
+            },
+            {
+                "dynip.rothen.com": false
+            },
+            {
+                "http.dnsbl.sorbs.net": false
+            },
+            {
+                "ips.backscatterer.org": false
+            },
+            {
+                "ix.dnsbl.manitu.net": false
+            },
+            {
+                "korea.services.net": false
+            },
+            {
+                "misc.dnsbl.sorbs.net": false
+            },
+            {
+                "noptr.spamrats.com": false
+            },
+            {
+                "orvedb.aupads.org": false
+            },
+            {
+                "pbl.spamhaus.org": false
+            },
+            {
+                "proxy.bl.gweep.ca": false
+            },
+            {
+                "psbl.surriel.com": false
+            },
+            {
+                "relays.bl.gweep.ca": false
+            },
+            {
+                "relays.nether.net": false
+            },
+            {
+                "sbl.spamhaus.org": false
+            },
+            {
+                "short.rbl.jp": false
+            },
+            {
+                "singular.ttk.pte.hu": false
+            },
+            {
+                "smtp.dnsbl.sorbs.net": false
+            },
+            {
+                "socks.dnsbl.sorbs.net": false
+            },
+            {
+                "spam.abuse.ch": false
+            },
+            {
+                "spam.dnsbl.anonmails.de": false
+            },
+            {
+                "spam.dnsbl.sorbs.net": false
+            },
+            {
+                "spam.spamrats.com": false
+            },
+            {
+                "spambot.bls.digibase.ca": false
+            },
+            {
+                "spamrbl.imp.ch": false
+            },
+            {
+                "spamsources.fabel.dk": false
+            },
+            {
+                "ubl.lashback.com": false
+            },
+            {
+                "ubl.unsubscore.com": false
+            },
+            {
+                "virus.rbl.jp": false
+            },
+            {
+                "web.dnsbl.sorbs.net": false
+            },
+            {
+                "wormrbl.imp.ch": false
+            },
+            {
+                "xbl.spamhaus.org": false
+            },
+            {
+                "z.mailspike.net": false
+            },
+            {
+                "zen.spamhaus.org": false
+            },
+            {
+                "zombie.dnsbl.sorbs.net": false
+            }
+        ]
+    }
+}

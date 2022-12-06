@@ -170,11 +170,12 @@ class StudentParentInlineSerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     parent = StudentParentInlineSerializer(read_only=True)
+    parent_email = serializers.EmailField(write_only=True)
     created_at = serializers.SerializerMethodField('get_created_at')
     # updated_at = serializers.SerializerMethodField('get_updated_at')
     class Meta :
         model = Student
-        fields = ['identifier', 'first_name','last_name','middle_name',  'parent' , 'created_at']
+        fields = ['identifier', 'first_name','last_name','middle_name',  'parent', 'parent_email' , 'created_at']
 
         extra_kwargs = {
             'identifier':{'read_only' : True},
@@ -218,6 +219,14 @@ class ResetPasswordRequestEmailSerializer(serializers.Serializer):
     class Meta:
         fields =  ['email']
 
+
+
+class UserVettingSerializer(serializers.Serializer):
+    email = serializers.EmailField(allow_blank=False)
+    number = serializers.CharField(allow_blank=False)
+
+    class Meta:
+        fields = [ 'email' , 'number']
 
 
 class SetNewPasswordSerializer(serializers.Serializer):

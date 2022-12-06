@@ -40,5 +40,6 @@ urlpatterns = [
     path('students/<str:identifier>/verify', views.StudentPickUpVerificationApiView.as_view(), name='verify-student-picked'),
     path('students/<str:identifier>/history', views.StudentPickUpVerificationHistoryApiView.as_view(), name='retrieve-student-verification-history'),
     # path('users/profile/update', views.UserProfileUpdateApiView.as_view(), name='user-profile-update'), 
-    # path('users/profile-image/upload', views.UserProfileImageUploadApiView.as_view(), name='user-profile-image-upload'), 
+
+    path('users/vetting', views.UserVettingApiView.as_view(), name='UserVettingApiView'), 
 ] 

@@ -191,7 +191,8 @@ class ChannelUserJoinApiView(generics.GenericAPIView):
                 channel_user = channel_user_exist.first()
                 channel_user.user = user
                 channel_user.save()
-                return Response({'success':False ,'detail': 'You are now in the channel'} , status=status.HTTP_200_OK)
+                ser = ChannelUserSerializer(channel_user).data
+                return Response({'success':False ,'detail': 'You are now in the channel', 'channel': ser } , status=status.HTTP_200_OK) 
             return Response({'success':False ,'detail': "Your data is not available in the channel! Contact the school admin"} , status=status.HTTP_401_UNAUTHORIZED)
 
 class ChannelStudentListCreateApiView(generics.ListCreateAPIView): 
@@ -223,16 +224,27 @@ class ChannelStudentListCreateApiView(generics.ListCreateAPIView):
     )
     def post(self, request , identifier ):
         try:
-            channel = Channel.objects.get(identifier=identifier)
+            channel = Channel.objects.get(identifier=identifier) 
         except:
             return Response({'success':False ,'detail': 'Channel does not exist'} , status=status.HTTP_400_BAD_REQUEST)
+
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            first_name = serializer.validated_data.get('first_name', None )
-            last_name = serializer.validated_data.get('last_name', None )
-            middle_name = serializer.validated_data.get('middle_name', None )
-            student = Student.objects.create(first_name=first_name , last_name=last_name , middle_name=middle_name , channel=channel )
-            return Response(self.serializer_class(student).data , status=status.HTTP_201_CREATED)
+            parent = ChannelUser.objects.filter(channel=channel, email=serializer.validated_data.get('parent_email') , is_parent=True )
+            if parent.count() :
+                parent = parent.first()
+                first_name = serializer.validated_data.get('first_name', None )
+                last_name = serializer.validated_data.get('last_name', None )
+                middle_name = serializer.validated_data.get('middle_name', None ) 
+                student = Student.objects.create(
+                first_name=first_name , 
+                last_name=last_name , 
+                middle_name=middle_name , channel=channel , parent=parent ) 
+                return Response(self.serializer_class(student).data , status=status.HTTP_201_CREATED)
+            else:
+                return Response({'success':False ,'detail': 'Parent not in channel'} , status=status.HTTP_400_BAD_REQUEST)
+            
+
 
 class ChannelParentsListCreateAPIView(generics.ListCreateAPIView):
     queryset = ChannelUser.objects.all()
@@ -249,7 +261,12 @@ class ChannelParentsListCreateAPIView(generics.ListCreateAPIView):
     )
     def get(self, request , identifier ):
         channel = get_channel_by_identifier(identifier)
+        try:
+            channel = Channel.objects.get(identifier=identifier)
+        except Channel.DoesNotExist:
+            return Response({'success':False , 'detail':'Channel not found'}, status=status.HTTP_404_NOT_FOUND)
         query = self.get_queryset()
+
         page = self.paginate_queryset(query)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

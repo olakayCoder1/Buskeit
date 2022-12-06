@@ -23,7 +23,7 @@ from .serializers import (
     ChangePasswordSerializer, ClientRegisterSerializer, 
     LoginSerializer, ResetPasswordRequestEmailSerializer,
     SetNewPasswordSerializer, UserProfileImageSerializer, 
-    UserAccountActivationCodeConfirmSerializer,
+    UserAccountActivationCodeConfirmSerializer, UserVettingSerializer,
     UserEmailPremblyConfirmSerializer, UserSerializer)
 from .tokens import create_jwt_pair_for_user
 from .utils import PremblyServices
@@ -361,3 +361,366 @@ class AccountEmailVerificationConfirmApiView(APIView):
 
 
 
+
+
+email_vetting_response = {
+    "status": True,
+    "response_code": "0",
+    "message": "Successful",
+    "data": {
+        "basic": {
+            "smtp-status": "ok",
+            "domain-error": False ,
+            "verified": True,
+            "is-freemail": True,
+            "is-disposable": False ,
+            "valid": True,
+            "is-catch-all": False ,
+            "is-deferred": False ,
+            "provider": "gmail.com",
+            "domain": "gmail.com",
+            "smtp-response": "250 2.1.5 OK oz43-20020a1709077dab00b0072ac7a2726esi1583583ejc.474 - gsmtp",
+            "syntax-error": False ,
+            "email": "user@gmail.com",
+            "is-personal": True
+        },
+        "other": {
+            "email": "user@gmail.com",
+            "reputation": "high",
+            "suspicious": False ,
+            "references": 5,
+            "details": {
+                "blacklisted": False ,
+                "malicious_activity": False ,
+                "malicious_activity_recent": False ,
+                "credentials_leaked": True,
+                "credentials_leaked_recent": False ,
+                "data_breach": True,
+                "first_seen": "05/24/2019",
+                "last_seen": "10/03/2020",
+                "domain_exists": True,
+                "domain_reputation": "n/a",
+                "new_domain": False ,
+                "days_since_domain_creation": 9824,
+                "suspicious_tld": False,
+                "spam": False,
+                "free_provider": True,
+                "disposable": False,
+                "deliverable": True,
+                "accept_all": False,
+                "valid_mx": True,
+                "primary_mx": "gmail-smtp-in.l.google.com",
+                "spoofable": True,
+                "spf_strict": True,
+                "dmarc_enforced": False,
+                "profiles": [
+                    "twitter",
+                    "gravatar"
+                ]
+            }
+        },
+        "domain_info": {
+            "domain_name": "GMAIL.COM",
+            "registry_domain_id": "4667231_DOMAIN_COM-VRSN",
+            "registrar_whois_server": "whois.markmonitor.com",
+            "registrar_url": "http",
+            "updated_date": "2021-07-11T09",
+            "creation_date": "1995-08-13T04",
+            "registry_expiry_date": "2022-08-12T04",
+            "registrar": "MarkMonitor Inc.",
+            "registrar_iana_id": "292",
+            "registrar_abuse_contact_email": "abusecomplaints@markmonitor.com",
+            "registrar_abuse_contact_phone": "+1.2086851750",
+            "domain_status": "serverUpdateProhibited https",
+            "name_server": "NS4.GOOGLE.COM",
+            "dnssec": "unsigned",
+            "url_of_the_icann_whois_inaccuracy_complaint_form": "https",
+            "last_update_of_whois_database": "2022-07-07T08"
+        },
+        "breaches": [
+            {
+                "Name": "Appen",
+                "Title": "Appen",
+                "Domain": "appen.com",
+                "BreachDate": "2020-06-22",
+                "AddedDate": "2020-07-30T07:00:21Z",
+                "ModifiedDate": "2020-07-30T07:00:21Z",
+                "PwnCount": 5888405,
+                "Description": "In June 2020, the AI training data company <a href=\"https://www.bleepingcomputer.com/news/security/hacker-leaks-386-million-user-records-from-18-companies-for-free/\" target=\"_blank\" rel=\"noopener\">Appen suffered a data breach</a> exposing the details of almost 5.9 million users which were subsequently sold online. Included in the breach were names, email addresses and passwords stored as bcrypt hashes. Some records also contained phone numbers, employers and IP addresses. The data was provided to HIBP by <a href=\"https://dehashed.com/\" target=\"_blank\" rel=\"noopener\">dehashed.com</a>.",
+                "LogoPath": "https://haveibeenpwned.com/Content/Images/PwnedLogos/Appen.png",
+                "DataClasses": [
+                    "Email addresses",
+                    "Employers",
+                    "IP addresses",
+                    "Names",
+                    "Passwords",
+                    "Phone numbers"
+                ],
+                "IsVerified": True,
+                "IsFabricated": False,
+                "IsSensitive": False,
+                "IsRetired": False,
+                "IsSpamList": False,
+                "IsMalware": False
+            },
+            {
+                "Name": "Canva",
+                "Title": "Canva",
+                "Domain": "canva.com",
+                "BreachDate": "2019-05-24",
+                "AddedDate": "2019-08-09T14:24:01Z",
+                "ModifiedDate": "2019-08-09T14:24:01Z",
+                "PwnCount": 137272116,
+                "Description": "In May 2019, the graphic design tool website <a href=\"https://support.canva.com/contact/customer-support/may-24-security-incident-faqs/\" target=\"_blank\" rel=\"noopener\">Canva suffered a data breach</a> that impacted 137 million subscribers. The exposed data included email addresses, usernames, names, cities of residence and passwords stored as bcrypt hashes for users not using social logins. The data was provided to HIBP by a source who requested it be attributed to \"JimScott.Sec@protonmail.com\".",
+                "LogoPath": "https://haveibeenpwned.com/Content/Images/PwnedLogos/Canva.png",
+                "DataClasses": [
+                    "Email addresses",
+                    "Geographic locations",
+                    "Names",
+                    "Passwords",
+                    "Usernames"
+                ],
+                "IsVerified": True,
+                "IsFabricated": False,
+                "IsSensitive": False,
+                "IsRetired": False,
+                "IsSpamList": False,
+                "IsMalware": False
+            },
+            {
+                "Name": "Gravatar",
+                "Title": "Gravatar",
+                "Domain": "gravatar.com",
+                "BreachDate": "2020-10-03",
+                "AddedDate": "2021-12-05T22:45:58Z",
+                "ModifiedDate": "2021-12-08T01:47:02Z",
+                "PwnCount": 113990759,
+                "Description": "In October 2020, <a href=\"https://www.bleepingcomputer.com/news/security/online-avatar-service-gravatar-allows-mass-collection-of-user-info/\" target=\"_blank\" rel=\"noopener\">a security researcher published a technique for scraping large volumes of data from Gravatar, the service for providing globally unique avatars </a>. 167 million names, usernames and MD5 hashes of email addresses used to reference users' avatars were subsequently scraped and distributed within the hacking community. 114 million of the MD5 hashes were cracked and distributed alongside the source hash, thus disclosing the original email address and accompanying data. Following the impacted email addresses being searchable in HIBP, <a href=\"https://en.gravatar.com/support/data-privacy\" target=\"_blank\" rel=\"noopener\">Gravatar release an FAQ detailing the incident</a>.",
+                "LogoPath": "https://haveibeenpwned.com/Content/Images/PwnedLogos/Gravatar.png",
+                "DataClasses": [
+                    "Email addresses",
+                    "Names",
+                    "Usernames"
+                ],
+                "IsVerified": True,
+                "IsFabricated": False,
+                "IsSensitive": False,
+                "IsRetired": False,
+                "IsSpamList": False,
+                "IsMalware": False
+            }
+        ],
+        "identitypass_verification": {
+            "status": False,
+            "response_code": "05",
+            "message": "Endpoint has been disable or inactive...please contact administrator"
+        },
+        "kyc": {},
+        "instagram": {
+            "active": True,
+            "data": {}
+        },
+        "pinterest": {
+            "active": True,
+            "data": {}
+        },
+        "twitter": {
+            "active": True,
+            "data": {}
+        },
+        "gravatar": {
+            "active": True,
+            "data": {
+                "entry": [
+                    {
+                        "id": "117899327",
+                        "hash": "dc37423cea1ea33099a1667a2bc4550f",
+                        "requestHash": "dc37423cea1ea33099a1667a2bc4550f",
+                        "profileUrl": "http://gravatar.com/rugipo",
+                        "preferredUsername": "rugipo",
+                        "thumbnailUrl": "https://secure.gravatar.com/avatar/dc37423cea1ea33099a1667a2bc4550f",
+                        "photos": [
+                            {
+                                "value": "https://secure.gravatar.com/avatar/dc37423cea1ea33099a1667a2bc4550f",
+                                "type": "thumbnail"
+                            }
+                        ],
+                        "name": {
+                            "givenName": "Name",
+                            "familyName": "Surname",
+                            "formatted": "Full Name"
+                        },
+                        "displayName": "codeAdept",
+                        "urls": []
+                    }
+                ]
+            }
+        },
+        "github": {
+            "active": False,
+            "data": {}
+        },
+        "discord": {
+            "active": True,
+            "data": {}
+        },
+        "ebay": {
+            "active": False,
+            "data": {}
+        },
+        "linkedin": {
+            "active": True,
+            "data": {}
+        }
+    }
+}
+
+
+
+
+# {
+#     "status": true,
+#     "response_code": "00",
+#     "message": "Successful",
+#     "data": {
+#         "basic": {
+#             "valid": true,
+#             "number": "2348030000000",
+#             "local_format": "08030000000",
+#             "international_format": "+2348030000000",
+#             "country_prefix": "+234",
+#             "country_code": "NG",
+#             "country_name": "Nigeria (Federal Republic of)",
+#             "location": "",
+#             "carrier": "MTN Nigeria Communications Ltd",
+#             "line_type": "mobile"
+#         },
+#         "socials": [
+#             "facebook.com",
+#             "twitter.com",
+#             "linkedin.com",
+#             "instagram.com",
+#             "vk.com"
+#         ],
+#         "other_social_media": {
+#             "is_registered": true,
+#             "profile_picture": "",
+#             "contact_info": {
+#                 "businessProfile": {
+#                     "id": {
+#                         "server": "c.us",
+#                         "user": "2348030000000",
+#                         "_serialized": "2348030000000@c.us"
+#                     },
+#                     "tag": "4107712435",
+#                     "description": "I solve problems with Python and Javascript.\nI am your favourite software engineer👨🏻‍💻",
+#                     "categories": [
+#                         {
+#                             "id": "176831012360626",
+#                             "localized_display_name": "Professional Service"
+#                         }
+#                     ],
+#                     "profileOptions": {
+#                         "commerceExperience": "none",
+#                         "cartEnabled": true
+#                     },
+#                     "email": "email@email.com",
+#                     "website": [
+#                         "https://sitelink.com"
+#                     ],
+#                     "latitude": 6.5244,
+#                     "longitude": 3.3792,
+#                     "businessHours": {
+#                         "config": {
+#                             "sun": {
+#                                 "mode": "open_24h"
+#                             },
+#                             "mon": {
+#                                 "mode": "open_24h"
+#                             },
+#                             "tue": {
+#                                 "mode": "open_24h"
+#                             },
+#                             "wed": {
+#                                 "mode": "open_24h"
+#                             },
+#                             "thu": {
+#                                 "mode": "open_24h"
+#                             },
+#                             "fri": {
+#                                 "mode": "open_24h"
+#                             },
+#                             "sat": {
+#                                 "mode": "open_24h"
+#                             }
+#                         },
+#                         "timezone": "Africa/Lagos"
+#                     },
+#                     "address": "Lagos, Nigeria",
+#                     "fbPage": {},
+#                     "igProfessional": {},
+#                     "isProfileLinked": false,
+#                     "customUrlPaths": [],
+#                     "coverPhoto": null
+#                 },
+#                 "id": {
+#                     "server": "c.us",
+#                     "user": "23480",
+#                     "_serialized": "2348030000000@c.us"
+#                 },
+#                 "number": "2348030000000",
+#                 "isBusiness": true,
+#                 "isEnterprise": false,
+#                 "labels": [],
+#                 "pushname": "Segun Isreal A.",
+#                 "type": "in",
+#                 "verifiedLevel": 0,
+#                 "verifiedName": "Segun Isreal A.",
+#                 "isMe": true,
+#                 "isUser": true,
+#                 "isGroup": false,
+#                 "isWAContact": true,
+#                 "isMyContact": false,
+#                 "isBlocked": false
+#             }
+#         }
+#     }
+# }
+
+
+
+
+class UserVettingApiView(generics.GenericAPIView):
+    serializer_class =  UserVettingSerializer
+
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+
+        response = email_vetting_response
+        # print(response)
+#   "email": "user@gmail.com",
+#             "reputation": "high", malicious_activity
+#             "suspicious": False ,
+        if response['response_code'] == '00' :
+            print(response['data']['other']['email'])
+            print(response['data']['other']['reputation'])
+            print(response['data']['other']['suspicious'])
+
+            response_data = {'success':True , 'detail':'Verification successful'}
+
+            response_data.update({'reputation': 'High'}) if response['data']['other']['reputation'] == 'high' else response_data.update({ 'reputation': 'Low'})
+            response_data.update({'suspicious': 'User is suspicious'}) if response['data']['other']['suspicious'] else response_data.update({'suspicious': 'User not suspicious'})
+
+            if response['data']['other']['details']['malicious_activity'] == True:
+                response_data.update({'malicious_activity' : 'Malicious activity found' })
+
+            else:
+                response_data.update({  'malicious_activity' : 'Malicious activity not found' })
+
+            return Response(response_data , status=status.HTTP_200_OK)
+        
+
+        return Response({'success': False , 'detail':'Record not found'} , status=status.HTTP_404_NOT_FOUND)
