@@ -14,7 +14,7 @@ class CustomUserAdminConfig(UserAdmin):
     ordering = ('-created_at',)
     list_display = ('email', 'first_name','last_name', 'is_active', 'is_staff', 'is_superuser','is_verified') 
     fieldsets = (
-        (None, {'fields': ('email', 'first_name',  'last_name', 'phone_number', 'address','gender' )}), 
+        (None, {'fields': ('identifier','email', 'first_name',  'last_name', 'phone_number', 'address','gender' )}), 
         ('Permissions', {'fields': ('is_staff', 'is_active','is_verified')}),
     )
     add_fieldsets = (

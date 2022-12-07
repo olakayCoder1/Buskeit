@@ -691,6 +691,10 @@ phone_vetting_response = {
 }
 
 
+class UserDetail(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    lookup_field = 'identifier'
 
 
 class UserVettingApiView(generics.GenericAPIView):

@@ -41,5 +41,6 @@ urlpatterns = [
     path('students/<str:identifier>/history', views.StudentPickUpVerificationHistoryApiView.as_view(), name='retrieve-student-verification-history'),
     # path('users/profile/update', views.UserProfileUpdateApiView.as_view(), name='user-profile-update'), 
 
-    path('users/vetting', views.UserVettingApiView.as_view(), name='UserVettingApiView'), 
+    path('users/vetting', views.UserVettingApiView.as_view(), name='UserVettingApiView'),
+    path('users/<str:identifier>', views.UserDetail.as_view(), name='UserDetail'), 
 ] 
