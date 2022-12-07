@@ -14,7 +14,8 @@ from .paginations import CustomPagination
 from .serializers import  (
     ChannelsSerializer , ChannelJoinSerializer , StudentPickUpVerificationHistorySerializer,
      ChannelUserSerializer , ChannelUserFullDetailSerializer , ChannelActivationCodeConfirmSerializer ,
-     ChannelUserUploadFileSerializer , MapStudentsToParentSerializer ,ChannelDriverLocationUpdateSerializer
+     ChannelUserUploadFileSerializer , MapStudentsToParentSerializer ,ChannelDriverLocationUpdateSerializer,
+     ChannelUserSerializer2
 )
 
 from rest_framework.permissions import AllowAny , IsAuthenticated
@@ -53,7 +54,7 @@ def index(request):
 
 # !!! TODO , CHANGE THE VIEW TO ALLOW LIST ,  CREATE 
 class ChannelsListCreateApiView(generics.GenericAPIView):      
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated] 
     queryset = Channel.objects.all()
     serializer_class = ChannelsSerializer  
     
@@ -63,9 +64,9 @@ class ChannelsListCreateApiView(generics.GenericAPIView):
         operation_summary='Retrieve users channel list'
     )
     def get(self, request, *args, **kwargs):
-        # data = ChannelUser.objects.filter(user__id=1)   
-        data = ChannelUser.objects.filter(user__id=request.user.id)
-        serializer = ChannelUserSerializer(data, many=True)
+        data = ChannelUser.objects.filter(user__id=1)   
+        # data = ChannelUser.objects.filter(user__id=request.user.id)
+        serializer = ChannelUserSerializer2(data, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK ) 
 
 
