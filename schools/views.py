@@ -54,7 +54,7 @@ def index(request):
 
 # !!! TODO , CHANGE THE VIEW TO ALLOW LIST ,  CREATE 
 class ChannelsListCreateApiView(generics.GenericAPIView):      
-    # permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated] 
     queryset = Channel.objects.all()
     serializer_class = ChannelsSerializer  
     
@@ -64,8 +64,8 @@ class ChannelsListCreateApiView(generics.GenericAPIView):
         operation_summary='Retrieve users channel list'
     )
     def get(self, request, *args, **kwargs):
-        data = ChannelUser.objects.filter(user__id=1)   
-        # data = ChannelUser.objects.filter(user__id=request.user.id)
+        # data = ChannelUser.objects.filter(user__id=1)   
+        data = ChannelUser.objects.filter(user__id=request.user.id)
         serializer = ChannelUserSerializer2(data, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK ) 
 
